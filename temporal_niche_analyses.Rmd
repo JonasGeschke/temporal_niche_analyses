@@ -196,41 +196,38 @@ As we can see in this `plotORIG`, is does not make sense to include those data p
 So next, we delete those rows out of the datatable where this information is not noted. Further, we would like to have data rows with Arctiinae and 2nd trust level only. So we delete all other datapoints. Finally, as it does not make sense to keep them, we delete all rows where we do not know the species number.
 
 ```{r, results='hide'}
-# Creating a new "Gdata1" as future working file
-Wfile <- Gdata
-
 # Deleting all rows, where no "site" is specified
-summary(Wfile$site)
-Wfile <- subset(Wfile, site != "NA")
-Wfile <- droplevels(Wfile)
-summary(Wfile$site)
+summary(Gdata$site)
+Gdata <- subset(Gdata, site != "NA")
+Gdata <- droplevels(Gdata)
+summary(Gdata$site)
 
 # Deleting all rows, where no "year" is specified
-summary(Wfile$year)
-Wfile <- subset(Wfile, year != "NA")
-Wfile <- droplevels(Wfile)
+summary(Gdata$year)
+Gdata <- subset(Gdata, year != "NA")
+Gdata <- droplevels(Gdata)
 
 # Deleting all rows, in where it is no "Arct" in the "taxon" column
-Wfile <- subset(Wfile, taxon == "Arct")
-Wfile <- droplevels(Wfile)
-summary(Wfile$taxon)
+Gdata <- subset(Gdata, taxon == "Arct")
+Gdata <- droplevels(Gdata)
+summary(Gdata$taxon)
 
 # Deleting all rows, in where it is no trust level "2" in the "trust" column
-Wfile <- subset(Wfile, trust == "2")
-Wfile <- droplevels(Wfile)
-summary(Wfile$trust)
+Gdata <- subset(Gdata, trust == "2")
+Gdata <- droplevels(Gdata)
+summary(Gdata$trust)
 
 # Deleting all rows, where no "spp" is identified
-Wfile <- subset(Wfile, spp != "NA")
-Wfile <- droplevels(Wfile)
-summary(Wfile$spp)
+Gdata <- subset(Gdata, spp != "NA")
+Gdata <- droplevels(Gdata)
+summary(Gdata$spp)
 ```
 
 Now, we repeat plotting this. This plot includes all the datapoints that probably are more interesting to look at, as all basic information are given we need for further analyses and interpretation.
 
 ```{r, fig.cap='plot2', fig.ext='pdf', fig.height=27, fig.width=17, dpi=300}
 # Creating overview_plot
-overview_plot <- ggplot(Wfile, aes(x = day_nr, fill = monat))+
+overview_plot <- ggplot(Gdata, aes(x = day_nr, fill = monat))+
   scale_fill_manual(name = "Month", values = colourpalette10,
                     breaks = c("Januar",
                                "Februar",
