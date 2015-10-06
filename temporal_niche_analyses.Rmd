@@ -1,5 +1,5 @@
 ---
-title: "__Statistical analysis of co-occurrence interactions within tropical moth__"
+title: "__Temporal Overlap Analyses Of Tropical Moth__"
 author: "Jonas Geschke and Sören Greule"
 date: "Winter semester 2015/16"
 output:
