@@ -1,5 +1,5 @@
 ---
-title: "__Temporal Overlap Analyses Of Tropical Moth__"
+title: "__Temporal Overlap Analyses of Tropical Arctiidae Species__"
 author: "Jonas Geschke and Sören Greule"
 date: "Winter semester 2015/16"
 output:
