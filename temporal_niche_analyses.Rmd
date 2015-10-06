@@ -14,7 +14,7 @@ classoption: a4paper
 # Introduction
 _This skript is the outcome of a selected topic within the MSc Environmental Scienes, Faculty of Environment and Natural Resources, University of Freiburg. The selected topic is supervised by Dr Tim Burzlaff._
 
-The script is about the analysis of monitoring data from both Costa Rica (locations: El Bosque Nuevo Butterfly Farm and the private home of P. Gloor, near San José) and Peru (location: Panguana). The main interest is about looking for existing co-occurrence and community interactions within species of Arctiinae and Ithomiini species.
+The script is about the analysis of monitoring data from both Costa Rica (locations: El Bosque Nuevo Butterfly Farm and the private home of P. Gloor, near San José) and Peru (location: Panguana). The main interest is about looking for existing temporal niche and community interactions within species of Arctiinae and Ithomiini species.
 
 - - - - - - - - - -
 # Script
