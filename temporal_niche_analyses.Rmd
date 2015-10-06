@@ -1,0 +1,627 @@
+---
+title: "__Statistical analysis of co-occurrence interactions within tropical moth__"
+author: "Jonas Geschke and Sören Greule"
+date: "Winter semester 2015/16"
+output:
+  pdf_document:
+    toc: yes
+documentclass: article
+classoption: a4paper
+---
+
+- - - - - - - - - -
+
+# Introduction
+_This skript is the outcome of a selected topic within the MSc Environmental Scienes, Faculty of Environment and Natural Resources, University of Freiburg. The selected topic is supervised by Dr Tim Burzlaff._
+
+The script is about the analysis of monitoring data from both Costa Rica (locations: El Bosque Nuevo Butterfly Farm and the private home of P. Gloor, near San José) and Peru (location: Panguana). The main interest is about looking for existing co-occurrence and community interactions within species of Arctiinae and Ithomiini species.
+
+- - - - - - - - - -
+# Script
+
+## Defining general settings
+
+In here, we set the working directory, which one might have to adapt or change in order to get this skript running. Further, we provide the code for installing all needed packages and activate them.
+
+```{r, message=FALSE}
+# Setting the working directory
+setwd("~/Studium/MSc/3. Semester/Co-occurrence/GitHub/co-occurence")
+
+###### Installing packages (if needed: delete the hashtag in front of the code!) ######
+# install.packages("knitr")
+# install.packages("cooccur")
+# install.packages("reshape")
+# install.packages("lubridate")
+# install.packages("ggplot2")
+# install.packages("EcoSimR")
+#######################################################################################
+
+# Loading packages
+library(knitr)
+library(cooccur)
+library(reshape)
+library(lubridate)
+library(ggplot2)
+library(EcoSimR)
+```
+
+
+## Revising the original data
+
+Now we read the original data and directly resave it as an archive datafile. In the working datafile `Gdata`, we rename the columns for easier handling.
+
+```{r, results='hide'}
+# Load the original datatable
+Gdata <- read.csv2("IndID Auszug 01.Sep 15 All In.csv",
+                   header = T,
+                   sep = ";",
+                   na.strings = "")
+
+# Resaving original datatable as archive table
+GdataORIG <- Gdata
+
+# Show original column names
+names(Gdata)
+
+# Renaming columns
+names(Gdata)[names(Gdata) == "DataSet"]     <- "taxon"
+names(Gdata)[names(Gdata) == "Bemerkung1"]  <- "notes"
+names(Gdata)[names(Gdata) == "day_night"]   <- "light"
+names(Gdata)[names(Gdata) == "Art."]        <- "spp"
+names(Gdata)[names(Gdata) == "FangDatum"]   <- "date"
+names(Gdata)[names(Gdata) == "FangOrt"]     <- "site"
+names(Gdata)[names(Gdata) == "FangZeit"]    <- "time"
+names(Gdata)[names(Gdata) == "IndID"]       <- "iid"
+names(Gdata)[names(Gdata) == "Sex"]         <- "sex"
+names(Gdata)[names(Gdata) == "Typ1"]        <- "trap"
+names(Gdata)[names(Gdata) == "Vertrauen"]   <- "trust"
+
+# Control new column names
+names(Gdata)
+```
+
+
+Now we have a table that we can further process.
+First of all, we do not need the columns "notes" and "iid" (individual ID) and correct some oversight mistakes within the datatable. Also, we do have 2 levels of trust within the whole datatable - 1 and 2. Trust level "2" is good, level "1" not so much. Those datapoint with no trust level at all are deleted at once.
+
+```{r, results='hide'}
+# Deleting the "notes" and "iid" columns
+Gdata$notes <- NULL
+Gdata$iid <- NULL
+names(Gdata)
+
+# Delete all rows, where the trust level is equal 0 (= NA)
+Gdata <- subset(Gdata, Gdata$trust != "NA")
+Gdata <- droplevels(Gdata)
+summary(Gdata)
+
+# Correcting the "light" cells
+summary(Gdata$light)
+Gdata$light[Gdata$light == "atg"]           <- "tag"
+Gdata$light[Gdata$light == "tag "]          <- "tag"
+Gdata$light[Gdata$light == "nacht\n"]       <- "nacht"
+Gdata$light[Gdata$light == "nachts"]        <- "nacht"
+Gdata <- droplevels(Gdata)
+summary(Gdata$light)
+### There is some "m" within the values - what to do with it?
+
+# Correcting the "site" cells
+summary(Gdata$site)
+Gdata$site[Gdata$site == "CR"]              <- "EBN"
+Gdata$site[Gdata$site == "EBN\n"]           <- "EBN"
+Gdata$site[Gdata$site == "GLOOR"]           <- "PG"
+Gdata <- droplevels(Gdata)
+summary(Gdata$site)
+
+# Correcting the "sex" cells
+summary(Gdata$sex)
+Gdata$sex[Gdata$sex == "f "]                <- "f"
+Gdata$sex[Gdata$sex == "w"]                 <- "f"
+Gdata <- droplevels(Gdata)
+summary(Gdata$sex)
+```
+
+
+## Processing the data for further uses
+
+For getting an overview plot of our data, we sort the whole datatable by date. Thus, we add two columns. Each one for the year and for the month. Afterwards we would like to produce a first plot, so we also add two columns containing information about the month and the day number.
+
+```{r, results='hide'}
+# Creating the column "year"
+Gdata <- cbind(Gdata, "year" = format(as.Date(Gdata$date, "%d.%m.%Y"), "%Y"))
+
+# Creating the column "month"
+Gdata <- cbind(Gdata, "month" = format(as.Date(Gdata$date, "%d.%m.%Y"), "%m"))
+
+# Creating a column, in which the month is written out
+Gdata <- cbind(Gdata, "monat" = format(as.Date(Gdata$date, "%d.%m.%Y"), "%B"))
+
+# Creating a column, in which for each day we define the day number within a year
+Gdata <- cbind(Gdata, "day_nr" = yday(as.Date(Gdata$date, "%d.%m.%Y")))
+
+# Sorting whole datatable by month
+Gdata <- Gdata[order(Gdata$month),]
+```
+
+
+Also, for later co-occurrence analyses, we create a "value" column.
+
+```{r, results='hide'}
+# Creating the "value" column, which contains availability information (yes/no)
+Gdata <- cbind(Gdata, "value" = 1)
+```
+
+
+```{r, include=FALSE}
+########################## brauchen wir nicht mehr, glaube ich ###########################
+# Gdata <- cbind(Gdata, "date_r" = as.Date(Gdata$date, "%d.%m.%Y"))
+# Gdata <- cbind(Gdata, "date_num" = as.numeric(Gdata$date))
+# Gdata <- cbind(Gdata, "monthday" = format(Gdata$date_r, "%m-%d"))
+# Gdata <- cbind(Gdata, "day_nr" = yday(Gdata$date_r))
+# Gdata <- cbind(Gdata, "month" = format(Gdata$date_r, "%m"))
+# Gdata <- cbind(Gdata, "Month" = format(Gdata$date_r, "month.names"))
+# str(Gdata)
+##########################################################################################
+```
+
+
+Now that we organized the datatable for a bit, we are ready to create a first overview plot about how many individuals were trapped thoughout the years.
+
+```{r, results='hide', fig.show='hide'}
+# Creating a colour palette for the plot
+colourpalette10 <- c("#596137",
+                     "#BD57C7",
+                     "#7FCD4E",
+                     "#BF543A",
+                     "#A3B1BF",
+                     "#CFB253",
+                     "#C55783",
+                     "#4F3647",
+                     "#7374BE",
+                     "#84CAA0")
+
+# Creating plot0. This plot shows the whole data (also NAs)!
+plot0 <- ggplot(Gdata, aes(x = day_nr, fill = monat))+
+  scale_fill_manual(name = "Month", values = colourpalette10,
+                    breaks = c("Januar",
+                               "Februar",
+                               "März",
+                               "April",
+                               "Mai",
+                               "Juni",
+                               "Juli",
+                               "August",
+                               "September",
+                               "Oktober"))+
+  geom_histogram(binwidth = 1)+
+  facet_wrap(site ~ year, ncol = 1)+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  labs(title = "Number of trapped individuals per site, including NAs",
+       x = "Day of the year",
+       y = "No of trapped Arctiinae individuals")+
+  scale_x_continuous(expand = c(0,0),
+                     breaks = seq(0, 365, 7),
+                     limits = c(0, 365))
+plot0
+```
+
+
+As we can see in that plot, is does not make sense to include those data points, where we neither know the trapping site nor the trapping year. So next, we delete those rows out of the datatable.
+
+```{r, results='hide'}
+# Creating a new "Gdata1"
+Gdata1 <- Gdata
+
+# Deleting all rows, where no "site" is specified
+summary(Gdata1$site)
+Gdata1 <- subset(Gdata1, site != "NA")
+Gdata1 <- droplevels(Gdata1)
+summary(Gdata1$site)
+
+# Deleting all rows, where no "year" is specified.
+# This means that we actually have to delete the "date" column,
+# as we previously got the year information from here.
+summary(Gdata1$date)
+Gdata1 <- subset(Gdata1, date != "NA")
+Gdata1 <- droplevels(Gdata1)
+summary(Gdata1$date)
+
+# Controlling that there are no more NAs in the "date" and "year" columns
+summary(Gdata1$year)
+# As there still is one NA within the "year" column, we also delete this
+summary(Gdata1$year)
+Gdata1 <- subset(Gdata1, year != "NA")
+Gdata1 <- droplevels(Gdata1)
+# And we controll this process again
+summary(Gdata1$year)
+# Done!
+```
+
+Now one could repeat plotting this.
+
+```{r, fig.show='hide'}
+# Creating plot1. This plot shows the data without site and year NAs!
+plot1 <- ggplot(Gdata1, aes(x = day_nr, fill = monat))+
+  scale_fill_manual(name = "Month", values = colourpalette10,
+                    breaks = c("Januar",
+                               "Februar",
+                               "März",
+                               "April",
+                               "Mai",
+                               "Juni",
+                               "Juli",
+                               "August",
+                               "September",
+                               "Oktober"))+
+  geom_histogram(binwidth = 1)+
+  facet_wrap(site ~ year, ncol = 1)+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  labs(title = "Number of trapped individuals per site",
+       x = "Day of the year",
+       y = "No of trapped Arctiinae individuals")+
+  scale_x_continuous(expand = c(0,0),
+                     breaks = seq(0, 365, 7),
+                     limits = c(0, 365))
+plot1
+```
+
+Next, we would like to have such a plot just with the data about Arctiinae and only those datapoint with 2nd trust level. So we delete all other datapoints. Also, it does not make sense to keep rows where we do not know the species number.
+
+```{r, results='hide'}
+# Creating a new "Gdata2"
+Gdata2 <- Gdata1
+
+# Deleting all rows, in where it is no "Arct" in the "taxon" column
+Gdata2 <- subset(Gdata2, taxon == "Arct")
+Gdata2 <- droplevels(Gdata2)
+summary(Gdata2$taxon)
+
+# Deleting all rows, in where it is no trust level "2" in the "trust" column
+Gdata2 <- subset(Gdata2, trust == "2")
+Gdata2 <- droplevels(Gdata2)
+summary(Gdata2$trust)
+
+# Deleting all rows, where no "spp" is identified
+Gdata2 <- subset(Gdata2, spp != "NA")
+Gdata2 <- droplevels(Gdata2)
+summary(Gdata2$spp)
+```
+
+Now, we repeat plotting this. This plot includes all the datapoints that probably are more interesting to look at, as all basic information are given.
+
+```{r, fig.cap='plot2', fig.ext='pdf', fig.height=27, fig.width=17, dpi=300}
+# Creating plot2.
+plot2 <- ggplot(Gdata2, aes(x = day_nr, fill = monat))+
+  scale_fill_manual(name = "Month", values = colourpalette10,
+                    breaks = c("Januar",
+                               "Februar",
+                               "März",
+                               "April",
+                               "Mai",
+                               "Juni",
+                               "Juli",
+                               "August",
+                               "September",
+                               "Oktober"))+
+  geom_histogram(binwidth = 1)+
+  facet_wrap(site ~ year, ncol = 1)+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  labs(title = "Number of trapped Arctiinae individuals 2007-2015
+       in EBN and 2010, 2013 & 2015 in Peru Panguana",
+       x = "Day of the year",
+       y = "No of trapped Arctiinae individuals")+
+  scale_x_continuous(expand = c(0,0),
+                     breaks = seq(0, 365, 7),
+                     limits = c(0, 365))
+plot2
+```
+
+
+## Preparing the data for further analyses
+
+### Subsetting function bases
+
+```{r, eval=FALSE}
+dataset_split <- function(data, light = FALSE, site = FALSE, trap = FALSE, month_start = "01", month_end = "12"){
+  
+}
+
+sex_rowsplit <- function(data){
+  
+}
+
+column_split <- function(data, light = FALSE, base_interval = "days"){
+  
+}
+```
+
+```{r, eval=FALSE}
+subsetting(Gdata2, trap = "L", month_start = "05", month_end = "11")
+```
+
+
+
+### Subsetting manually
+
+Subsetting means to organize and cut the datatable so one only gets those information one needs for the upcoming analyses. For each subset we create one new datatable.
+
+
+```{r, eval=FALSE}
+# Creating a table for cooccur() function, Gdate_ss_EBN
+Gdata_ss_EBN_co <- aggregate(Gdata_s1_EBN$value,
+                       by = list(Gdata_s1_EBN$spp, Gdata_s1_EBN$date),
+                       FUN = "sum",
+                       na.rm = T)
+Gdata_ss_EBN_coo <- cast(Gdata_ss_EBN_co,
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(Gdata_ss_EBN_coo) <- Gdata_ss_EBN_coo$Group.1
+Gdata_ss_EBN_coo <- Gdata_ss_EBN_coo[,-1]
+```
+
+
+#### Subsetting by trap
+
+The first subset `Gdata_s1` will contain the information about species trapped over time by trap type per site: `Gdata_s1_EBN` and `Gdata_s1_PP`
+
+```{r, results='hide'}
+# Creating a new "Gdata_s" subset datatable
+Gdata_s <- Gdata2
+
+# Creating a new "Gdata_s1" subset datatable
+Gdata_s1 <- Gdata_s
+
+# Deleting all rows, where no trap is specified
+summary(Gdata_s1$trap)
+Gdata_s1 <- subset(Gdata_s1, trap != "NA")
+Gdata_s1 <- droplevels(Gdata_s1)
+summary(Gdata_s1$trap)
+
+# Creating the subset "Gdata_s1_EBN", containing only Costa Rican datapoints
+summary(Gdata_s1$site)
+Gdata_s1_EBN <- subset(Gdata_s1, site == "EBN")
+Gdata_s1_EBN <- droplevels(Gdata_s1_EBN)
+summary(Gdata_s1_EBN$site)
+
+# Creating the subset "Gdata_s1_PP", containing only Peruvian datapoints
+summary(Gdata_s1$site)
+Gdata_s1_PP <- subset(Gdata_s1, site == "PP")
+Gdata_s1_PP <- droplevels(Gdata_s1_PP)
+summary(Gdata_s1_PP$site)
+```
+
+
+#### Substetting by year, only rainy season
+
+We did not find any actual weatherdata about the rainy season at our sites yet. So, I take the general weather information about rainy season, which goes in EBN (Guanacaste province, Costa Rica) from May to November [Source, 8.9.15](http://costa-rica-guanacaste.com/guanacaste.html) and in Panguana (Peru) from October to April [Source, 8.9.15](http://www.zsm.mwn.de/panguana/).
+
+Now we subset a datatable for a co-occurrence analysis by year and rainy season only, EBN only.
+
+```{r, results='hide'}
+Gdata_EBN <- subset(Gdata2, site == "EBN")
+Gdata_EBN_rain <- subset(Gdata_EBN, month %in% c("05", "06", "07", "08", "09", "10"))
+Gdata_EBN_rain <- droplevels(Gdata_EBN_rain)
+summary(Gdata_EBN_rain$site)
+summary(Gdata_EBN_rain$month)
+```
+
+
+
+### Converting the datatables into the format required by the co-occur() funktion
+
+In a first step, we take the subsets `Gdata_s1_EBN`/ `Gdata_s1_PP` and create the tables formated for co-occurrence analyses.
+
+```{r, results='hide', warning=FALSE}
+# Creating a table for cooccur() function, Gdate_s1_EBN
+Gdata_s1_EBN_co <- aggregate(Gdata_s1_EBN,
+                       by = list(Gdata_s1_EBN$spp, Gdata_s1_EBN$trap),
+                       FUN = mean,
+                       na.rm = T)
+Gdata_s1_EBN_coo <- cast(Gdata_s1_EBN_co,
+                  Group.1 ~ Group.2,
+                  mean)
+
+# Processing all NA values to "0" (absence of the species)
+Gdata_s1_EBN_coo$L[Gdata_s1_EBN_coo$L != "1"]       <- 0
+Gdata_s1_EBN_coo$N[Gdata_s1_EBN_coo$N != "1"]       <- 0
+Gdata_s1_EBN_coo$PA[Gdata_s1_EBN_coo$PA != "1"]     <- 0
+Gdata_s1_EBN_coo$Z[Gdata_s1_EBN_coo$Z != "1"]       <- 0
+Gdata_s1_EBN_coo <- droplevels(Gdata_s1_EBN_coo)
+
+# Controlling that values are numeric
+str(Gdata_s1_EBN_coo)
+
+# Changing the species to front column and deleting the species column
+rownames(Gdata_s1_EBN_coo) <- Gdata_s1_EBN_coo$Group.1
+Gdata_s1_EBN_coo <- Gdata_s1_EBN_coo[,-1]
+```
+
+```{r, results='hide', warning=FALSE}
+# Creating a table for cooccur() function, Gdate_s1_PP
+Gdata_s1_PP_co <- aggregate(Gdata_s1_PP,
+                       by = list(Gdata_s1_PP$spp, Gdata_s1_PP$trap),
+                       FUN = mean,
+                       na.rm = T)
+Gdata_s1_PP_coo <- cast(Gdata_s1_PP_co,
+                  Group.1 ~ Group.2,
+                  mean)
+
+# Processing all NA values to "0" (absence of the species)
+Gdata_s1_PP_coo$L[Gdata_s1_PP_coo$L != "1"]       <- 0
+Gdata_s1_PP_coo$N[Gdata_s1_PP_coo$N != "1"]       <- 0
+Gdata_s1_PP_coo$PA[Gdata_s1_PP_coo$PA != "1"]     <- 0
+Gdata_s1_PP_coo$Z[Gdata_s1_PP_coo$Z != "1"]       <- 0
+Gdata_s1_PP_coo <- droplevels(Gdata_s1_PP_coo)
+
+# Controlling that values are numeric
+str(Gdata_s1_PP_coo)
+
+# Changing the species to front column and deleting the species column
+rownames(Gdata_s1_PP_coo) <- Gdata_s1_PP_coo$Group.1
+Gdata_s1_PP_coo <- Gdata_s1_PP_coo[,-1]
+```
+
+
+Next, we create a table for running the co-occurrence analysis with the `Gdata_EBN` datatable.
+
+```{r, results='hide'}
+# Creating a table for cooccur() function, Gdate_s1_PP
+Gdata_EBN_rain_co <- aggregate(Gdata_EBN_rain,
+                       by = list(Gdata_EBN_rain$spp, Gdata_EBN_rain$year),
+                       FUN = mean,
+                       na.rm = T)
+Gdata_EBN_rain_coo <- cast(Gdata_EBN_rain_co,
+                  Group.1 ~ Group.2,
+                  mean)
+
+# Processing all NA values to "0" (absence of the species)
+Gdata_EBN_rain_coo$"2007"[Gdata_EBN_rain_coo$"2007" != "1"]       <- 0
+Gdata_EBN_rain_coo$"2008"[Gdata_EBN_rain_coo$"2008" != "1"]       <- 0
+Gdata_EBN_rain_coo$"2009"[Gdata_EBN_rain_coo$"2009" != "1"]       <- 0
+Gdata_EBN_rain_coo$"2010"[Gdata_EBN_rain_coo$"2010" != "1"]       <- 0
+Gdata_EBN_rain_coo$"2011"[Gdata_EBN_rain_coo$"2011" != "1"]       <- 0
+Gdata_EBN_rain_coo$"2012"[Gdata_EBN_rain_coo$"2012" != "1"]       <- 0
+Gdata_EBN_rain_coo$"2013"[Gdata_EBN_rain_coo$"2013" != "1"]       <- 0
+Gdata_EBN_rain_coo$"2014"[Gdata_EBN_rain_coo$"2014" != "1"]       <- 0
+Gdata_EBN_rain_coo$"2015"[Gdata_EBN_rain_coo$"2015" != "1"]       <- 0
+Gdata_EBN_rain_coo <- droplevels(Gdata_EBN_rain_coo)
+
+# Controlling that values are numeric
+str(Gdata_EBN_rain_coo)
+
+# Changing the species to front column and deleting the species column
+rownames(Gdata_EBN_rain_coo) <- Gdata_EBN_rain_coo$Group.1
+Gdata_EBN_rain_coo <- Gdata_EBN_rain_coo[,-1]
+```
+
+
+
+## Analyses
+
+Running the co-occurrence analysis by applying the cooccur() function with the cooccur R package.
+
+### Co-occurrence within Arctiinae in EBN, Costa Rica, and Panguana, Peru, by trap type
+
+The co-occurrence is analyzed by trap type.
+
+```{r, results='hide', fig.show='hide', warning=FALSE}
+# Applying the Gdata_s1_EBN_coo datatable
+cooccur.Gdata_s1_EBN <- cooccur(Gdata_s1_EBN_coo,
+                             type = "spp_site",
+                             thresh = T,
+                             spp_names = T,
+                             prob = "comb",
+                             only_effects = F)
+class(cooccur.Gdata_s1_EBN)
+
+# Requesting a summary table for significant results of the co-occurrence analysis
+summary(cooccur.Gdata_s1_EBN)
+
+# Requesting a table of results, columns "p_lt" and "p_gt" are the probabilities
+# that the two species do not co-occur less or more frequently than expected
+prob.table(cooccur.Gdata_s1_EBN)
+
+# Plotting the results
+plot(cooccur.Gdata_s1_EBN, plotrand = T)
+
+# Extracting co-occurrence information for one individual species
+pair(mod=cooccur.Gdata_s1_EBN, spp = "8001")
+# and plotting this individual information
+pair.profile(cooccur.Gdata_s1_EBN)
+```
+
+```{r}
+#######################################################################################
+# As there are neither positive nor negative co-occurrences, we have to think about
+# where it makes sense to carry on analysing!
+summary(cooccur.Gdata_s1_EBN)
+#######################################################################################
+```
+
+
+```{r, results='hide', fig.show='hide', warning=FALSE}
+# Applying the Gdata_s1_PP_coo datatable
+cooccur.Gdata_s1_PP <- cooccur(Gdata_s1_PP_coo,
+                             type = "spp_site",
+                             thresh = T,
+                             spp_names = T,
+                             prob = "comb",
+                             only_effects = F)
+class(cooccur.Gdata_s1_PP)
+
+# Requesting a summary table for significant results of the co-occurrence analysis
+summary(cooccur.Gdata_s1_PP)
+
+# Requesting a table of results, columns "p_lt" and "p_gt" are the probabilities
+# that the two species do not co-occur less or more frequently than expected
+prob.table(cooccur.Gdata_s1_PP)
+
+# Plotting the results
+plot(cooccur.Gdata_s1_PP, plotrand = T)
+
+# Extracting co-occurrence information for one individual species
+pair(mod=cooccur.Gdata_s1_PP, spp = "PP116")
+# and plotting this individual information
+pair.profile(cooccur.Gdata_s1_PP)
+```
+
+```{r}
+#######################################################################################
+# As there are neither positive nor negative co-occurrences, we have to think about
+# where it makes sense to carry on analysing!
+summary(cooccur.Gdata_s1_PP)
+#######################################################################################
+```
+
+
+# Co-occurrence within Arctiinae in EBN, Costa Rica, by year and rainy season only
+
+```{r, results='hide', fig.show='hide', warning=FALSE}
+# Applying the Gdata_s1_PP_coo datatable
+cooccur.Gdata_EBN_rain <- cooccur(Gdata_EBN_rain_coo,
+                             type = "spp_site",
+                             thresh = T,
+                             spp_names = T,
+                             prob = "comb",
+                             only_effects = F)
+class(cooccur.Gdata_EBN_rain)
+
+# Requesting a summary table for significant results of the co-occurrence analysis
+summary(cooccur.Gdata_EBN_rain)
+
+# Requesting a table of results, columns "p_lt" and "p_gt" are the probabilities
+# that the two species do not co-occur less or more frequently than expected
+prob.table(cooccur.Gdata_EBN_rain)
+
+# Plotting the results
+plot(cooccur.Gdata_EBN_rain, plotrand = T)
+
+# Extracting co-occurrence information for one individual species
+pair(mod=cooccur.Gdata_EBN_rain, spp = "5395")
+# and plotting this individual information
+pair.profile(cooccur.Gdata_EBN_rain)
+```
+
+```{r}
+#######################################################################################
+# We got a positive result!
+# Now just the question how to read the results ;-)
+# With Jonas' understanding: Taking spp "5395", it is unlikely to trap any other spp
+# at the same time during the rainy season, except the 94 positively associatied spp.
+# But as the other other species are not negatively associated, there might be a random
+# effect to trap them at the same time as spp "5395".
+summary(cooccur.Gdata_EBN_rain)
+#######################################################################################
+```
+
+
+
+- - - - - - - - - -
+# Results
+
+
+
+
