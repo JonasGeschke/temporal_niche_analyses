@@ -25,23 +25,19 @@ In here, we set the working directory, which one might have to adapt or change i
 
 ```{r, message=FALSE}
 # Setting the working directory
-setwd("~/Studium/MSc/3. Semester/Co-occurrence/GitHub/co-occurence")
+setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 
 ###### Installing packages (if needed: delete the hashtag in front of the code!) ######
-# install.packages("knitr")
-# install.packages("cooccur")
-# install.packages("reshape")
 # install.packages("lubridate")
 # install.packages("ggplot2")
+# install.packages("reshape")
 # install.packages("EcoSimR")
 #######################################################################################
 
 # Loading packages
-library(knitr)
-library(cooccur)
-library(reshape)
 library(lubridate)
 library(ggplot2)
+library(reshape)
 library(EcoSimR)
 ```
 
@@ -103,7 +99,7 @@ Gdata$light[Gdata$light == "nacht\n"]       <- "nacht"
 Gdata$light[Gdata$light == "nachts"]        <- "nacht"
 Gdata <- droplevels(Gdata)
 summary(Gdata$light)
-### There is some "m" within the values - what to do with it?
+### There are further values we need to think about! ("m" and time)
 
 # Correcting the "site" cells
 summary(Gdata$site)
@@ -119,6 +115,7 @@ Gdata$sex[Gdata$sex == "f "]                <- "f"
 Gdata$sex[Gdata$sex == "w"]                 <- "f"
 Gdata <- droplevels(Gdata)
 summary(Gdata$sex)
+### There are further values we need to think about! ("?" and "f?")
 ```
 
 
@@ -144,7 +141,7 @@ Gdata <- Gdata[order(Gdata$month),]
 ```
 
 
-Also, for later co-occurrence analyses, we create a "value" column.
+Also, for later `cast`-processing, we create a "value" column.
 
 ```{r, results='hide'}
 # Creating the "value" column, which contains availability information (yes/no)
@@ -152,17 +149,6 @@ Gdata <- cbind(Gdata, "value" = 1)
 ```
 
 
-```{r, include=FALSE}
-########################## brauchen wir nicht mehr, glaube ich ###########################
-# Gdata <- cbind(Gdata, "date_r" = as.Date(Gdata$date, "%d.%m.%Y"))
-# Gdata <- cbind(Gdata, "date_num" = as.numeric(Gdata$date))
-# Gdata <- cbind(Gdata, "monthday" = format(Gdata$date_r, "%m-%d"))
-# Gdata <- cbind(Gdata, "day_nr" = yday(Gdata$date_r))
-# Gdata <- cbind(Gdata, "month" = format(Gdata$date_r, "%m"))
-# Gdata <- cbind(Gdata, "Month" = format(Gdata$date_r, "month.names"))
-# str(Gdata)
-##########################################################################################
-```
 
 
 Now that we organized the datatable for a bit, we are ready to create a first overview plot about how many individuals were trapped thoughout the years.
@@ -181,7 +167,7 @@ colourpalette10 <- c("#596137",
                      "#84CAA0")
 
 # Creating plot0. This plot shows the whole data (also NAs)!
-plot0 <- ggplot(Gdata, aes(x = day_nr, fill = monat))+
+plotORIG <- ggplot(Gdata, aes(x = day_nr, fill = monat))+
   scale_fill_manual(name = "Month", values = colourpalette10,
                     breaks = c("Januar",
                                "Februar",
@@ -202,96 +188,49 @@ plot0 <- ggplot(Gdata, aes(x = day_nr, fill = monat))+
   scale_x_continuous(expand = c(0,0),
                      breaks = seq(0, 365, 7),
                      limits = c(0, 365))
-plot0
+plotORIG
 ```
 
 
-As we can see in that plot, is does not make sense to include those data points, where we neither know the trapping site nor the trapping year. So next, we delete those rows out of the datatable.
+As we can see in this `plotORIG`, is does not make sense to include those data points, where we neither know the trapping site nor the trapping year.
+So next, we delete those rows out of the datatable where this information is not noted. Further, we would like to have data rows with Arctiinae and 2nd trust level only. So we delete all other datapoints. Finally, as it does not make sense to keep them, we delete all rows where we do not know the species number.
 
 ```{r, results='hide'}
-# Creating a new "Gdata1"
-Gdata1 <- Gdata
+# Creating a new "Gdata1" as future working file
+Wfile <- Gdata
 
 # Deleting all rows, where no "site" is specified
-summary(Gdata1$site)
-Gdata1 <- subset(Gdata1, site != "NA")
-Gdata1 <- droplevels(Gdata1)
-summary(Gdata1$site)
+summary(Wfile$site)
+Wfile <- subset(Wfile, site != "NA")
+Wfile <- droplevels(Wfile)
+summary(Wfile$site)
 
-# Deleting all rows, where no "year" is specified.
-# This means that we actually have to delete the "date" column,
-# as we previously got the year information from here.
-summary(Gdata1$date)
-Gdata1 <- subset(Gdata1, date != "NA")
-Gdata1 <- droplevels(Gdata1)
-summary(Gdata1$date)
-
-# Controlling that there are no more NAs in the "date" and "year" columns
-summary(Gdata1$year)
-# As there still is one NA within the "year" column, we also delete this
-summary(Gdata1$year)
-Gdata1 <- subset(Gdata1, year != "NA")
-Gdata1 <- droplevels(Gdata1)
-# And we controll this process again
-summary(Gdata1$year)
-# Done!
-```
-
-Now one could repeat plotting this.
-
-```{r, fig.show='hide'}
-# Creating plot1. This plot shows the data without site and year NAs!
-plot1 <- ggplot(Gdata1, aes(x = day_nr, fill = monat))+
-  scale_fill_manual(name = "Month", values = colourpalette10,
-                    breaks = c("Januar",
-                               "Februar",
-                               "März",
-                               "April",
-                               "Mai",
-                               "Juni",
-                               "Juli",
-                               "August",
-                               "September",
-                               "Oktober"))+
-  geom_histogram(binwidth = 1)+
-  facet_wrap(site ~ year, ncol = 1)+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  labs(title = "Number of trapped individuals per site",
-       x = "Day of the year",
-       y = "No of trapped Arctiinae individuals")+
-  scale_x_continuous(expand = c(0,0),
-                     breaks = seq(0, 365, 7),
-                     limits = c(0, 365))
-plot1
-```
-
-Next, we would like to have such a plot just with the data about Arctiinae and only those datapoint with 2nd trust level. So we delete all other datapoints. Also, it does not make sense to keep rows where we do not know the species number.
-
-```{r, results='hide'}
-# Creating a new "Gdata2"
-Gdata2 <- Gdata1
+# Deleting all rows, where no "year" is specified
+summary(Wfile$year)
+Wfile <- subset(Wfile, year != "NA")
+Wfile <- droplevels(Wfile)
 
 # Deleting all rows, in where it is no "Arct" in the "taxon" column
-Gdata2 <- subset(Gdata2, taxon == "Arct")
-Gdata2 <- droplevels(Gdata2)
-summary(Gdata2$taxon)
+Wfile <- subset(Wfile, taxon == "Arct")
+Wfile <- droplevels(Wfile)
+summary(Wfile$taxon)
 
 # Deleting all rows, in where it is no trust level "2" in the "trust" column
-Gdata2 <- subset(Gdata2, trust == "2")
-Gdata2 <- droplevels(Gdata2)
-summary(Gdata2$trust)
+Wfile <- subset(Wfile, trust == "2")
+Wfile <- droplevels(Wfile)
+summary(Wfile$trust)
 
 # Deleting all rows, where no "spp" is identified
-Gdata2 <- subset(Gdata2, spp != "NA")
-Gdata2 <- droplevels(Gdata2)
-summary(Gdata2$spp)
+Wfile <- subset(Wfile, spp != "NA")
+Wfile <- droplevels(Wfile)
+summary(Wfile$spp)
 ```
 
-Now, we repeat plotting this. This plot includes all the datapoints that probably are more interesting to look at, as all basic information are given.
+Now, we repeat plotting this. This plot includes all the datapoints that probably are more interesting to look at, as all basic information are given we need for further analyses and interpretation.
 
 ```{r, fig.cap='plot2', fig.ext='pdf', fig.height=27, fig.width=17, dpi=300}
-# Creating plot2.
-plot2 <- ggplot(Gdata2, aes(x = day_nr, fill = monat))+
+# Creating overview_plot
+overview_plot <- ggplot(Wfile, aes(x = day_nr, fill = monat))+
   scale_fill_manual(name = "Month", values = colourpalette10,
                     breaks = c("Januar",
                                "Februar",
@@ -313,8 +252,9 @@ plot2 <- ggplot(Gdata2, aes(x = day_nr, fill = monat))+
   scale_x_continuous(expand = c(0,0),
                      breaks = seq(0, 365, 7),
                      limits = c(0, 365))
-plot2
+overview_plot
 ```
+
 
 
 ## Preparing the data for further analyses
@@ -340,6 +280,10 @@ subsetting(Gdata2, trap = "L", month_start = "05", month_end = "11")
 ```
 
 
+
+
+
+- - - - - - - - - -
 
 ### Subsetting manually
 
@@ -367,7 +311,7 @@ Gdata_ss_EBN_coo <- Gdata_ss_EBN_coo[,-1]
 
 The first subset `Gdata_s1` will contain the information about species trapped over time by trap type per site: `Gdata_s1_EBN` and `Gdata_s1_PP`
 
-```{r, results='hide'}
+```{r, eval=FALSE}
 # Creating a new "Gdata_s" subset datatable
 Gdata_s <- Gdata2
 
@@ -400,7 +344,7 @@ We did not find any actual weatherdata about the rainy season at our sites yet. 
 
 Now we subset a datatable for a co-occurrence analysis by year and rainy season only, EBN only.
 
-```{r, results='hide'}
+```{r, eval=FALSE}
 Gdata_EBN <- subset(Gdata2, site == "EBN")
 Gdata_EBN_rain <- subset(Gdata_EBN, month %in% c("05", "06", "07", "08", "09", "10"))
 Gdata_EBN_rain <- droplevels(Gdata_EBN_rain)
@@ -414,7 +358,7 @@ summary(Gdata_EBN_rain$month)
 
 In a first step, we take the subsets `Gdata_s1_EBN`/ `Gdata_s1_PP` and create the tables formated for co-occurrence analyses.
 
-```{r, results='hide', warning=FALSE}
+```{r, eval=FALSE}
 # Creating a table for cooccur() function, Gdate_s1_EBN
 Gdata_s1_EBN_co <- aggregate(Gdata_s1_EBN,
                        by = list(Gdata_s1_EBN$spp, Gdata_s1_EBN$trap),
@@ -439,7 +383,7 @@ rownames(Gdata_s1_EBN_coo) <- Gdata_s1_EBN_coo$Group.1
 Gdata_s1_EBN_coo <- Gdata_s1_EBN_coo[,-1]
 ```
 
-```{r, results='hide', warning=FALSE}
+```{r, eval=FALSE}
 # Creating a table for cooccur() function, Gdate_s1_PP
 Gdata_s1_PP_co <- aggregate(Gdata_s1_PP,
                        by = list(Gdata_s1_PP$spp, Gdata_s1_PP$trap),
@@ -467,7 +411,7 @@ Gdata_s1_PP_coo <- Gdata_s1_PP_coo[,-1]
 
 Next, we create a table for running the co-occurrence analysis with the `Gdata_EBN` datatable.
 
-```{r, results='hide'}
+```{r, eval=FALSE}
 # Creating a table for cooccur() function, Gdate_s1_PP
 Gdata_EBN_rain_co <- aggregate(Gdata_EBN_rain,
                        by = list(Gdata_EBN_rain$spp, Gdata_EBN_rain$year),
@@ -507,7 +451,7 @@ Running the co-occurrence analysis by applying the cooccur() function with the c
 
 The co-occurrence is analyzed by trap type.
 
-```{r, results='hide', fig.show='hide', warning=FALSE}
+```{r, eval=FALSE}
 # Applying the Gdata_s1_EBN_coo datatable
 cooccur.Gdata_s1_EBN <- cooccur(Gdata_s1_EBN_coo,
                              type = "spp_site",
@@ -533,7 +477,7 @@ pair(mod=cooccur.Gdata_s1_EBN, spp = "8001")
 pair.profile(cooccur.Gdata_s1_EBN)
 ```
 
-```{r}
+```{r, eval=FALSE}
 #######################################################################################
 # As there are neither positive nor negative co-occurrences, we have to think about
 # where it makes sense to carry on analysing!
@@ -542,7 +486,7 @@ summary(cooccur.Gdata_s1_EBN)
 ```
 
 
-```{r, results='hide', fig.show='hide', warning=FALSE}
+```{r, eval=FALSE}
 # Applying the Gdata_s1_PP_coo datatable
 cooccur.Gdata_s1_PP <- cooccur(Gdata_s1_PP_coo,
                              type = "spp_site",
@@ -568,7 +512,7 @@ pair(mod=cooccur.Gdata_s1_PP, spp = "PP116")
 pair.profile(cooccur.Gdata_s1_PP)
 ```
 
-```{r}
+```{r, eval=FALSE}
 #######################################################################################
 # As there are neither positive nor negative co-occurrences, we have to think about
 # where it makes sense to carry on analysing!
@@ -579,7 +523,7 @@ summary(cooccur.Gdata_s1_PP)
 
 # Co-occurrence within Arctiinae in EBN, Costa Rica, by year and rainy season only
 
-```{r, results='hide', fig.show='hide', warning=FALSE}
+```{r, eval=FALSE}
 # Applying the Gdata_s1_PP_coo datatable
 cooccur.Gdata_EBN_rain <- cooccur(Gdata_EBN_rain_coo,
                              type = "spp_site",
@@ -605,7 +549,7 @@ pair(mod=cooccur.Gdata_EBN_rain, spp = "5395")
 pair.profile(cooccur.Gdata_EBN_rain)
 ```
 
-```{r}
+```{r, eval=FALSE}
 #######################################################################################
 # We got a positive result!
 # Now just the question how to read the results ;-)
