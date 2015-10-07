@@ -16,7 +16,7 @@ _This skript is the outcome of a selected topic within the MSc Environmental Sci
 
 The script is about the analysis of monitoring data from both Costa Rica (locations: El Bosque Nuevo Butterfly Farm and the private home of P. Gloor, near San José) and Peru (location: Panguana). The main interest is about looking for existing temporal niche and community interactions within species of Arctiinae and Ithomiini species.
 
-The main analysis approach comes from the paper "Temporal Overlap and Co-Occurrence in a Guild of Sub-Tropical Tephritid Fruit Flies" by Lopes GN, Souza-Filho MF, Gotelli NJ, Lemos LJU, Godoy WAC and Zucchi RA (2015) in PLoS ONE 10(7): e0132124. doi:10.1371/journal.pone.0132124. We concentrate on their idea about the niche overlap analyses.
+The main analysis approach comes from the paper "Temporal Overlap and Co-Occurrence in a Guild of Sub-Tropical Tephritid Fruit Flies" by Lopes GN, Souza-Filho MF, Gotelli NJ, Lemos LJU, Godoy WAC and Zucchi RA (2015) in PLoS ONE 10(7): e0132124, [doi:10.1371/journal.pone.0132124](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0132124). We concentrate on their idea about the niche overlap analyses.
 The data used in our analyses come from the long-term monitoring trapping of the Chair of Forest Zoology and Entomology, University of Freiburg, and was undertaken by several staff members and student assistants.
 
 
