@@ -281,6 +281,31 @@ subsetting(Gdata2, trap = "L", month_start = "05", month_end = "11")
 ```
 
 
+### Processing the data into information relative to the whole trapping success
+
+```{r, eval=FALSE}
+# Creating a subset, which only contains data from EBN
+Gdata_EBN <- subset(Gdata, site == "EBN")
+```
+
+
+```{r, eval=FALSE}
+# Creating a table in which we have relativ values lateron
+Gdata_EBN_rel <- cast(aggregate(Gdata_EBN$value,
+                       by = list(Gdata_EBN$spp, Gdata_EBN$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(Gdata_EBN_rel) <- Gdata_EBN_rel$Group.1
+Gdata_EBN_rel <- Gdata_EBN_rel[,-1]
+
+### IMPORTANT in the new Gdata_EBN_rel are still some dates missing ...
+```
+
 
 
 
