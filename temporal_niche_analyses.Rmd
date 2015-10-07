@@ -200,31 +200,13 @@ As we can see in this `plotORIG`, is does not make sense to include those data p
 So next, we delete those rows out of the datatable where this information is not noted. Further, we would like to have data rows with Arctiinae and 2nd trust level only. So we delete all other datapoints. Finally, as it does not make sense to keep them, we delete all rows where we do not know the species number.
 
 ```{r, results='hide'}
-# Deleting all rows, where no "site" is specified
-summary(Gdata$site)
+# Deleting all rows, where the taxon is not "Arct", the "spp" and "site" are not noted, the trust level is not "2" and where we dont have a specific trapping "year" noted
+Gdata <- subset(Gdata, taxon == "Arct")
+Gdata <- subset(Gdata, spp != "NA")
 Gdata <- subset(Gdata, site != "NA")
-Gdata <- droplevels(Gdata)
-summary(Gdata$site)
-
-# Deleting all rows, where no "year" is specified
-summary(Gdata$year)
+Gdata <- subset(Gdata, trust == "2")
 Gdata <- subset(Gdata, year != "NA")
 Gdata <- droplevels(Gdata)
-
-# Deleting all rows, in where it is no "Arct" in the "taxon" column
-Gdata <- subset(Gdata, taxon == "Arct")
-Gdata <- droplevels(Gdata)
-summary(Gdata$taxon)
-
-# Deleting all rows, in where it is no trust level "2" in the "trust" column
-Gdata <- subset(Gdata, trust == "2")
-Gdata <- droplevels(Gdata)
-summary(Gdata$trust)
-
-# Deleting all rows, where no "spp" is identified
-Gdata <- subset(Gdata, spp != "NA")
-Gdata <- droplevels(Gdata)
-summary(Gdata$spp)
 ```
 
 Now, we repeat plotting this. This plot includes all the datapoints that probably are more interesting to look at, as all basic information are given we need for further analyses and interpretation.
