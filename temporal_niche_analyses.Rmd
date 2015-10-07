@@ -242,6 +242,15 @@ overview_plot
 
 ## Preparing the data for further analyses
 
+Creating subset datasets for each site, `Gdata_EBN` and `Gdata_PP`.
+
+```{r, eval=FALSE}
+# Creating a subset, which only contains data from EBN
+Gdata_EBN <- subset(Gdata, site == "EBN")
+Gdata_PP <- subset(Gdata, site == "PP")
+```
+
+
 ### Subsetting function bases
 
 ```{r, eval=FALSE}
@@ -266,13 +275,8 @@ subsetting(Gdata2, trap = "L", month_start = "05", month_end = "11")
 ### Processing the data into information relative to the whole trapping success
 
 ```{r, eval=FALSE}
-# Creating a subset, which only contains data from EBN
-Gdata_EBN <- subset(Gdata, site == "EBN")
-```
-
-
-```{r, eval=FALSE}
-# Creating a table in which we have relativ values lateron
+# Creating a table in which we have relative values lateron
+# For now using the Gdata_EBN dataset only
 Gdata_EBN_rel <- cast(aggregate(Gdata_EBN$value,
                        by = list(Gdata_EBN$spp, Gdata_EBN$date),
                        FUN = "sum",
