@@ -292,14 +292,14 @@ Gdata_EBN_rel <- cast(aggregate(Gdata_EBN$value,
 # Changing the species to front column and deleting the species column
 rownames(Gdata_EBN_rel) <- Gdata_EBN_rel$Group.1
 Gdata_EBN_rel <- Gdata_EBN_rel[,-1]
-
-### IMPORTANT in the new Gdata_EBN_rel are still some dates missing ...
 ```
 
 
 ```{r}
-# test <- prop.table(as.matrix(Gdata_EBN_rel), 2)
+test <- prop.table(as.matrix(Gdata_EBN_rel), 1)
 ```
+
+
 
 
 - - - - - - - - - -
