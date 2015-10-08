@@ -271,21 +271,15 @@ Gdata_PP_2015 <- subset(Gdata_PP, year == "2015")
 ### Subsetting function bases
 
 ```{r, eval=FALSE}
-dataset_split <- function(data, light = FALSE, site = FALSE, trap = FALSE, month_start = "01", month_end = "12"){
-  
-}
+# dataset_split <- function(data, light = FALSE, site = FALSE, trap = FALSE, month_start = "01", month_end = "12"){}
 
-sex_rowsplit <- function(data){
-  
-}
+# sex_rowsplit <- function(data){}
 
-column_split <- function(data, light = FALSE, base_interval = "days"){
-  
-}
+# column_split <- function(data, light = FALSE, base_interval = "days"){}
 ```
 
 ```{r, eval=FALSE}
-subsetting(Gdata2, trap = "L", month_start = "05", month_end = "11")
+# subsetting(Gdata2, trap = "L", month_start = "05", month_end = "11")
 ```
 
 
