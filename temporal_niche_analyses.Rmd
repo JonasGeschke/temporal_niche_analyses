@@ -297,6 +297,9 @@ Gdata_EBN_rel <- Gdata_EBN_rel[,-1]
 ```
 
 
+```{r}
+# test <- prop.table(as.matrix(Gdata_EBN_rel), 2)
+```
 
 
 - - - - - - - - - -
