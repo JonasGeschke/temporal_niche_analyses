@@ -251,6 +251,20 @@ Creating subset datasets for each site, `Gdata_EBN` and `Gdata_PP`.
 # Creating a subset, which only contains data from EBN
 Gdata_EBN <- subset(Gdata, site == "EBN")
 Gdata_PP <- subset(Gdata, site == "PP")
+
+# Creating subsets for each year per site
+Gdata_EBN_2007 <- subset(Gdata_EBN, year == "2007")
+Gdata_EBN_2008 <- subset(Gdata_EBN, year == "2008")
+Gdata_EBN_2009 <- subset(Gdata_EBN, year == "2009")
+Gdata_EBN_2010 <- subset(Gdata_EBN, year == "2010")
+Gdata_EBN_2011 <- subset(Gdata_EBN, year == "2011")
+Gdata_EBN_2012 <- subset(Gdata_EBN, year == "2012")
+Gdata_EBN_2013 <- subset(Gdata_EBN, year == "2013")
+Gdata_EBN_2014 <- subset(Gdata_EBN, year == "2014")
+Gdata_EBN_2015 <- subset(Gdata_EBN, year == "2015")
+Gdata_PP_2010 <- subset(Gdata_PP, year == "2010")
+Gdata_PP_2013 <- subset(Gdata_PP, year == "2013")
+Gdata_PP_2015 <- subset(Gdata_PP, year == "2015")
 ```
 
 
@@ -297,6 +311,10 @@ Gdata_EBN_rel <- Gdata_EBN_rel[,-1]
 
 ```{r, eval=FALSE}
 test <- prop.table(as.matrix(Gdata_EBN_rel), 1)
+
+# Here, the package "EcoSimR" is needed
+pianka(test)
+czekanowski(test)
 ```
 
 
