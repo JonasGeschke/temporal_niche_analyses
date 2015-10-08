@@ -369,6 +369,28 @@ pianka(test_2012)
 czekanowski(test_2012)
 ```
 
+```{r, eval=FALSE}
+# pianka
+m <- test_2011/rowSums(test_2011) # m == test_2011
+pairwise_pi <- cbind(t(combn(nrow(m), 2)), 0)
+    for (i in 1:nrow(pairwise_pi)) pairwise_pi[i, 3] <- sum(m[pairwise_pi[i, 
+        1], ] * m[pairwise_pi[i, 2], ])/sqrt(sum(m[pairwise_pi[i, 1], 
+        ]^2) * sum(m[pairwise_pi[i, 2], ]^2))
+print(pairwise_pi)
+
+# czekanowski
+m <- test_2011/rowSums(test_2011) # m == test_2011
+pairwise_cz <- cbind(t(combn(nrow(m), 2)), 0)
+    for (i in 1:nrow(pairwise_cz)) pairwise_cz[i, 3] <- 1 - 0.5 * sum(abs((m[pairwise_cz[i, 
+        1], ] - m[pairwise_cz[i, 2], ])))
+print(pairwise_cz)
+
+
+plot(pairwise_pi[,3], pairwise_cz[,3])
+```
+
+
+
 
 
 
