@@ -370,7 +370,9 @@ czekanowski(test_2012)
 ```
 
 ```{r, eval=FALSE}
-# pianka and czekanowski analysis for EBN_2011_rel
+# pianka and czekanowski analysis for EBN_2011_rel as matrix
+# Here, the package "EcoSimR" is needed
+
 
 # pianka
 m <- test_2011/rowSums(test_2011) # m == test_2011
@@ -389,6 +391,30 @@ print(pairwise_cz)
 
 
 plot(pairwise_pi[,3], pairwise_cz[,3])
+```
+
+```{r, eval=FALSE}
+# pianka and czekanowski analysis for EBN_2011_rel
+# Here, the package "EcoSimR" is needed
+
+
+# pianka
+n <- Gdata_EBN_2011_rel/rowSums(Gdata_EBN_2011_rel)
+pairwise <- cbind(t(combn(rownames(n), 2)), 0)
+    for (i in 1:nrow(pairwise)) pairwise[i, 3] <- sum(n[pairwise[i, 
+        1], ] * n[pairwise[i, 2], ])/sqrt(sum(n[pairwise[i, 1], 
+        ]^2) * sum(n[pairwise[i, 2], ]^2))
+print(pairwise)
+
+# czekanowski
+n <- Gdata_EBN_2011_rel/rowSums(Gdata_EBN_2011_rel)
+pairwise_c <- cbind(t(combn(rownames(n), 2)), 0)
+    for (i in 1:nrow(pairwise_c)) pairwise_c[i, 3] <- 1 - 0.5 * sum(abs((n[pairwise_c[i, 
+        1], ] - n[pairwise_c[i, 2], ])))
+print(pairwise_c)
+
+
+plot(pairwise[,3], pairwise_c[,3])
 ```
 
 
