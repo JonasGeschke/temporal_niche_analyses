@@ -370,6 +370,8 @@ czekanowski(test_2012)
 ```
 
 ```{r, eval=FALSE}
+# pianka and czekanowski analysis for EBN_2011_rel
+
 # pianka
 m <- test_2011/rowSums(test_2011) # m == test_2011
 pairwise_pi <- cbind(t(combn(nrow(m), 2)), 0)
