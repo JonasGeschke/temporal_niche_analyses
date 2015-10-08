@@ -138,6 +138,7 @@ Gdata <- cbind(Gdata, "month" = format(as.Date(Gdata$date, "%d.%m.%Y"), "%m"))
 Gdata <- cbind(Gdata, "monat" = format(as.Date(Gdata$date, "%d.%m.%Y"), "%B"))
 
 # Creating a column, in which for each day we define the day number within a year
+# Here, the package "lubridate" is needed
 Gdata <- cbind(Gdata, "day_nr" = yday(as.Date(Gdata$date, "%d.%m.%Y")))
 
 # Sorting whole datatable by month
@@ -171,6 +172,7 @@ colourpalette10 <- c("#596137",
                      "#84CAA0")
 
 # Creating plot0. This plot shows the whole data (also NAs)!
+# Here, the package "ggplot2" is needed
 plotORIG <- ggplot(Gdata, aes(x = day_nr, fill = monat))+
   scale_fill_manual(name = "Month", values = colourpalette10,
                     breaks = c("Januar",
@@ -213,6 +215,7 @@ Now, we repeat plotting this. This plot includes all the datapoints that probabl
 
 ```{r, fig.cap='plot2', fig.ext='pdf', fig.height=27, fig.width=17, dpi=300}
 # Creating overview_plot
+# Here, the package "ggplot2" is needed
 overview_plot <- ggplot(Gdata, aes(x = day_nr, fill = monat))+
   scale_fill_manual(name = "Month", values = colourpalette10,
                     breaks = c("Januar",
@@ -277,6 +280,7 @@ subsetting(Gdata2, trap = "L", month_start = "05", month_end = "11")
 ```{r, eval=FALSE}
 # Creating a table in which we have relative values lateron
 # For now using the Gdata_EBN dataset only
+# Here, the package "reshape" is needed
 Gdata_EBN_rel <- cast(aggregate(Gdata_EBN$value,
                        by = list(Gdata_EBN$spp, Gdata_EBN$date),
                        FUN = "sum",
