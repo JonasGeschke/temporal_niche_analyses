@@ -247,24 +247,24 @@ overview_plot
 
 Creating subset datasets for each site, `Gdata_EBN` and `Gdata_PP`.
 
-```{r, eval=FALSE}
+```{r, results='hide'}
 # Creating a subset, which only contains data from EBN
 Gdata_EBN <- subset(Gdata, site == "EBN")
 Gdata_PP <- subset(Gdata, site == "PP")
 
 # Creating subsets for each year per site
-Gdata_EBN_2007 <- subset(Gdata_EBN, year == "2007")
-Gdata_EBN_2008 <- subset(Gdata_EBN, year == "2008")
-Gdata_EBN_2009 <- subset(Gdata_EBN, year == "2009")
-Gdata_EBN_2010 <- subset(Gdata_EBN, year == "2010")
-Gdata_EBN_2011 <- subset(Gdata_EBN, year == "2011")
-Gdata_EBN_2012 <- subset(Gdata_EBN, year == "2012")
-Gdata_EBN_2013 <- subset(Gdata_EBN, year == "2013")
-Gdata_EBN_2014 <- subset(Gdata_EBN, year == "2014")
-Gdata_EBN_2015 <- subset(Gdata_EBN, year == "2015")
-Gdata_PP_2010 <- subset(Gdata_PP, year == "2010")
-Gdata_PP_2013 <- subset(Gdata_PP, year == "2013")
-Gdata_PP_2015 <- subset(Gdata_PP, year == "2015")
+EBN_2007 <- subset(Gdata_EBN, year == "2007")
+EBN_2008 <- subset(Gdata_EBN, year == "2008")
+EBN_2009 <- subset(Gdata_EBN, year == "2009")
+EBN_2010 <- subset(Gdata_EBN, year == "2010")
+EBN_2011 <- subset(Gdata_EBN, year == "2011")
+EBN_2012 <- subset(Gdata_EBN, year == "2012")
+EBN_2013 <- subset(Gdata_EBN, year == "2013")
+EBN_2014 <- subset(Gdata_EBN, year == "2014")
+EBN_2015 <- subset(Gdata_EBN, year == "2015")
+PP_2010 <- subset(Gdata_PP, year == "2010")
+PP_2013 <- subset(Gdata_PP, year == "2013")
+PP_2015 <- subset(Gdata_PP, year == "2015")
 ```
 
 
@@ -283,13 +283,14 @@ Gdata_PP_2015 <- subset(Gdata_PP, year == "2015")
 ```
 
 
-### Processing the data into information relative to the whole trapping success
+### Processing the datasets into the Pianka and Czekanowski input format
 
-```{r, eval=FALSE}
+`EBN_cast`
+```{r, results='hide'}
 # Creating a table in which we have relative values lateron
 # For now using the Gdata_EBN dataset only
 # Here, the package "reshape" is needed
-Gdata_EBN_rel <- cast(aggregate(Gdata_EBN$value,
+EBN_cast <- cast(aggregate(Gdata_EBN$value,
                        by = list(Gdata_EBN$spp, Gdata_EBN$date),
                        FUN = "sum",
                        na.rm = T),
@@ -298,27 +299,24 @@ Gdata_EBN_rel <- cast(aggregate(Gdata_EBN$value,
                   "sum")
 
 # Changing the species to front column and deleting the species column
-rownames(Gdata_EBN_rel) <- Gdata_EBN_rel$Group.1
-Gdata_EBN_rel <- Gdata_EBN_rel[,-1]
+rownames(EBN_cast) <- EBN_cast$Group.1
+EBN_cast <- EBN_cast[,-1]
 ```
 
 ```{r, eval=FALSE}
-test <- prop.table(as.matrix(Gdata_EBN_rel), 1)
-
-# Here, the package "EcoSimR" is needed
-pianka(test)
-czekanowski(test)
+# test <- prop.table(as.matrix(EBN_cast), 1)
 ```
 
 
+Creating subset-cast datasets for each year and site:
 
-`Gdata_EBN_2011_rel`
-```{r, eval=FALSE}
+`EBN_2007_cast`
+```{r, results='hide'}
 # Creating a table in which we have relative values lateron
-# For now using the Gdata_EBN_2011 dataset only
+# For now using the EBN_2007 dataset only
 # Here, the package "reshape" is needed
-Gdata_EBN_2011_rel <- cast(aggregate(Gdata_EBN_2011$value,
-                       by = list(Gdata_EBN_2011$spp, Gdata_EBN_2011$date),
+EBN_2007_cast <- cast(aggregate(EBN_2007$value,
+                       by = list(EBN_2007$spp, EBN_2007$date),
                        FUN = "sum",
                        na.rm = T),
                   Group.1 ~ Group.2,
@@ -326,25 +324,17 @@ Gdata_EBN_2011_rel <- cast(aggregate(Gdata_EBN_2011$value,
                   "sum")
 
 # Changing the species to front column and deleting the species column
-rownames(Gdata_EBN_2011_rel) <- Gdata_EBN_2011_rel$Group.1
-Gdata_EBN_2011_rel <- Gdata_EBN_2011_rel[,-1]
-```
-```{r, eval=FALSE}
-test_2011 <- prop.table(as.matrix(Gdata_EBN_2011_rel), 1)
-
-# Here, the package "EcoSimR" is needed
-pianka(test_2011)
-czekanowski(test_2011)
+rownames(EBN_2007_cast) <- EBN_2007_cast$Group.1
+EBN_2007_cast <- EBN_2007_cast[,-1]
 ```
 
-
-`Gdata_EBN_2012_rel`
-```{r, eval=FALSE}
+`EBN_2008_cast`
+```{r, results='hide'}
 # Creating a table in which we have relative values lateron
-# For now using the Gdata_EBN_2011 dataset only
+# For now using the EBN_2008 dataset only
 # Here, the package "reshape" is needed
-Gdata_EBN_2012_rel <- cast(aggregate(Gdata_EBN_2012$value,
-                       by = list(Gdata_EBN_2012$spp, Gdata_EBN_2012$date),
+EBN_2008_cast <- cast(aggregate(EBN_2008$value,
+                       by = list(EBN_2008$spp, EBN_2008$date),
                        FUN = "sum",
                        na.rm = T),
                   Group.1 ~ Group.2,
@@ -352,70 +342,524 @@ Gdata_EBN_2012_rel <- cast(aggregate(Gdata_EBN_2012$value,
                   "sum")
 
 # Changing the species to front column and deleting the species column
-rownames(Gdata_EBN_2012_rel) <- Gdata_EBN_2012_rel$Group.1
-Gdata_EBN_2012_rel <- Gdata_EBN_2012_rel[,-1]
+rownames(EBN_2008_cast) <- EBN_2008_cast$Group.1
+EBN_2008_cast <- EBN_2008_cast[,-1]
 ```
-```{r, eval=FALSE}
-test_2012 <- prop.table(as.matrix(Gdata_EBN_2012_rel), 1)
 
+`EBN_2009_cast`
+```{r, results='hide'}
+# Creating a table in which we have relative values lateron
+# For now using the EBN_2009 dataset only
+# Here, the package "reshape" is needed
+EBN_2009_cast <- cast(aggregate(EBN_2009$value,
+                       by = list(EBN_2009$spp, EBN_2009$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(EBN_2009_cast) <- EBN_2009_cast$Group.1
+EBN_2009_cast <- EBN_2009_cast[,-1]
+```
+
+`EBN_2010_cast`
+```{r, results='hide'}
+# Creating a table in which we have relative values lateron
+# For now using the EBN_2010 dataset only
+# Here, the package "reshape" is needed
+EBN_2010_cast <- cast(aggregate(EBN_2010$value,
+                       by = list(EBN_2010$spp, EBN_2010$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(EBN_2010_cast) <- EBN_2010_cast$Group.1
+EBN_2010_cast <- EBN_2010_cast[,-1]
+```
+
+`EBN_2011_cast`
+```{r, results='hide'}
+# Creating a table in which we have relative values lateron
+# For now using the Gdata_EBN_2011 dataset only
+# Here, the package "reshape" is needed
+EBN_2011_cast <- cast(aggregate(EBN_2011$value,
+                       by = list(EBN_2011$spp, EBN_2011$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(EBN_2011_cast) <- EBN_2011_cast$Group.1
+EBN_2011_cast <- EBN_2011_cast[,-1]
+```
+
+`EBN_2012_cast`
+```{r, results='hide'}
+# Creating a table in which we have relative values lateron
+# For now using the EBN_2012 dataset only
+# Here, the package "reshape" is needed
+EBN_2012_cast <- cast(aggregate(EBN_2012$value,
+                       by = list(EBN_2012$spp, EBN_2012$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(EBN_2012_cast) <- EBN_2012_cast$Group.1
+EBN_2012_cast <- EBN_2012_cast[,-1]
+```
+
+`EBN_2013_cast`
+```{r, results='hide'}
+# Creating a table in which we have relative values lateron
+# For now using the EBN_2013 dataset only
+# Here, the package "reshape" is needed
+EBN_2013_cast <- cast(aggregate(EBN_2013$value,
+                       by = list(EBN_2013$spp, EBN_2013$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(EBN_2013_cast) <- EBN_2013_cast$Group.1
+EBN_2013_cast <- EBN_2013_cast[,-1]
+```
+
+`EBN_2014_cast`
+```{r, results='hide'}
+# Creating a table in which we have relative values lateron
+# For now using the EBN_2014 dataset only
+# Here, the package "reshape" is needed
+EBN_2014_cast <- cast(aggregate(EBN_2014$value,
+                       by = list(EBN_2014$spp, EBN_2014$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(EBN_2014_cast) <- EBN_2014_cast$Group.1
+EBN_2014_cast <- EBN_2014_cast[,-1]
+```
+
+`EBN_2015_cast`
+```{r, results='hide'}
+# Creating a table in which we have relative values lateron
+# For now using the EBN_2015 dataset only
+# Here, the package "reshape" is needed
+EBN_2015_cast <- cast(aggregate(EBN_2015$value,
+                       by = list(EBN_2015$spp, EBN_2015$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(EBN_2015_cast) <- EBN_2015_cast$Group.1
+EBN_2015_cast <- EBN_2015_cast[,-1]
+```
+
+`PP_2010_cast`
+```{r, results='hide'}
+# Creating a table in which we have relative values lateron
+# For now using the PP_2010 dataset only
+# Here, the package "reshape" is needed
+PP_2010_cast <- cast(aggregate(PP_2010$value,
+                       by = list(PP_2010$spp, PP_2010$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(PP_2010_cast) <- PP_2010_cast$Group.1
+PP_2010_cast <- PP_2010_cast[,-1]
+```
+
+`PP_2013_cast`
+```{r, results='hide'}
+# Creating a table in which we have relative values lateron
+# For now using the PP_2013 dataset only
+# Here, the package "reshape" is needed
+PP_2013_cast <- cast(aggregate(PP_2013$value,
+                       by = list(PP_2013$spp, PP_2013$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(PP_2013_cast) <- PP_2013_cast$Group.1
+PP_2013_cast <- PP_2013_cast[,-1]
+```
+
+`PP_2015_cast`
+```{r, results='hide'}
+# Creating a table in which we have relative values lateron
+# For now using the PP_2015 dataset only
+# Here, the package "reshape" is needed
+PP_2015_cast <- cast(aggregate(PP_2015$value,
+                       by = list(PP_2015$spp, PP_2015$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(PP_2015_cast) <- PP_2015_cast$Group.1
+PP_2015_cast <- PP_2015_cast[,-1]
+```
+
+
+
+### Running the Pianka and Czekanowski niche overlap probability analyses for each year and site
+
+For EBN, 2007.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for EBN, 2007
 # Here, the package "EcoSimR" is needed
-pianka(test_2012)
-czekanowski(test_2012)
+
+# Setting the input data
+EBN07 <- EBN_2007_cast/rowSums(EBN_2007_cast)
+
+# Pianka
+EBN_2007_P <- cbind(t(combn(rownames(EBN07), 2)), 0)
+    for (i in 1:nrow(EBN_2007_P)) EBN_2007_P[i, 3] <- sum(EBN07[EBN_2007_P[i, 
+        1], ] * EBN07[EBN_2007_P[i, 2], ])/sqrt(sum(EBN07[EBN_2007_P[i, 1], 
+        ]^2) * sum(EBN07[EBN_2007_P[i, 2], ]^2))
+
+# Czekanowski
+EBN_2007_C <- cbind(t(combn(rownames(EBN07), 2)), 0)
+    for (i in 1:nrow(EBN_2007_C)) EBN_2007_C[i, 3] <- 1 - 0.5 * sum(abs((EBN07[EBN_2007_C[i, 
+        1], ] - EBN07[EBN_2007_C[i, 2], ])))
+
+plot(EBN_2007_P[,3], EBN_2007_C[,3],
+     main = "Niche Overlap Probabilities, EBN in 2007",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
 ```
 
-```{r, eval=FALSE}
-# pianka and czekanowski analysis for EBN_2011_rel as matrix
+For EBN, 2008.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for EBN, 2008
 # Here, the package "EcoSimR" is needed
 
+# Setting the input data
+EBN08 <- EBN_2008_cast/rowSums(EBN_2008_cast)
 
-# pianka
-m <- test_2011/rowSums(test_2011) # m == test_2011
-pairwise_pi <- cbind(t(combn(nrow(m), 2)), 0)
-    for (i in 1:nrow(pairwise_pi)) pairwise_pi[i, 3] <- sum(m[pairwise_pi[i, 
-        1], ] * m[pairwise_pi[i, 2], ])/sqrt(sum(m[pairwise_pi[i, 1], 
-        ]^2) * sum(m[pairwise_pi[i, 2], ]^2))
-print(pairwise_pi)
+# Pianka
+EBN_2008_P <- cbind(t(combn(rownames(EBN08), 2)), 0)
+    for (i in 1:nrow(EBN_2008_P)) EBN_2008_P[i, 3] <- sum(EBN08[EBN_2008_P[i, 
+        1], ] * EBN08[EBN_2008_P[i, 2], ])/sqrt(sum(EBN08[EBN_2008_P[i, 1], 
+        ]^2) * sum(EBN08[EBN_2008_P[i, 2], ]^2))
 
-# czekanowski
-m <- test_2011/rowSums(test_2011) # m == test_2011
-pairwise_cz <- cbind(t(combn(nrow(m), 2)), 0)
-    for (i in 1:nrow(pairwise_cz)) pairwise_cz[i, 3] <- 1 - 0.5 * sum(abs((m[pairwise_cz[i, 
-        1], ] - m[pairwise_cz[i, 2], ])))
-print(pairwise_cz)
+# Czekanowski
+EBN_2008_C <- cbind(t(combn(rownames(EBN08), 2)), 0)
+    for (i in 1:nrow(EBN_2008_C)) EBN_2008_C[i, 3] <- 1 - 0.5 * sum(abs((EBN08[EBN_2008_C[i, 
+        1], ] - EBN08[EBN_2008_C[i, 2], ])))
 
-
-plot(pairwise_pi[,3], pairwise_cz[,3])
+plot(EBN_2008_P[,3], EBN_2008_C[,3],
+     main = "Niche Overlap Probabilities, EBN in 2008",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
 ```
 
-```{r, eval=FALSE}
-# pianka and czekanowski analysis for EBN_2011_rel
+For EBN, 2009.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for EBN, 2009
 # Here, the package "EcoSimR" is needed
 
+# Setting the input data
+EBN09 <- EBN_2009_cast/rowSums(EBN_2009_cast)
 
-# pianka
-n <- Gdata_EBN_2011_rel/rowSums(Gdata_EBN_2011_rel)
-pairwise <- cbind(t(combn(rownames(n), 2)), 0)
-    for (i in 1:nrow(pairwise)) pairwise[i, 3] <- sum(n[pairwise[i, 
-        1], ] * n[pairwise[i, 2], ])/sqrt(sum(n[pairwise[i, 1], 
-        ]^2) * sum(n[pairwise[i, 2], ]^2))
-print(pairwise)
+# Pianka
+EBN_2009_P <- cbind(t(combn(rownames(EBN09), 2)), 0)
+    for (i in 1:nrow(EBN_2009_P)) EBN_2009_P[i, 3] <- sum(EBN09[EBN_2009_P[i, 
+        1], ] * EBN09[EBN_2009_P[i, 2], ])/sqrt(sum(EBN09[EBN_2009_P[i, 1], 
+        ]^2) * sum(EBN09[EBN_2009_P[i, 2], ]^2))
 
-# czekanowski
-n <- Gdata_EBN_2011_rel/rowSums(Gdata_EBN_2011_rel)
-pairwise_c <- cbind(t(combn(rownames(n), 2)), 0)
-    for (i in 1:nrow(pairwise_c)) pairwise_c[i, 3] <- 1 - 0.5 * sum(abs((n[pairwise_c[i, 
-        1], ] - n[pairwise_c[i, 2], ])))
-print(pairwise_c)
+# Czekanowski
+EBN_2009_C <- cbind(t(combn(rownames(EBN09), 2)), 0)
+    for (i in 1:nrow(EBN_2009_C)) EBN_2009_C[i, 3] <- 1 - 0.5 * sum(abs((EBN09[EBN_2009_C[i, 
+        1], ] - EBN09[EBN_2009_C[i, 2], ])))
 
-
-plot(pairwise[,3], pairwise_c[,3])
+plot(EBN_2009_P[,3], EBN_2009_C[,3],
+     main = "Niche Overlap Probabilities, EBN in 2009",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
 ```
+
+For EBN, 2010.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for EBN, 2010
+# Here, the package "EcoSimR" is needed
+
+# Setting the input data
+EBN10 <- EBN_2010_cast/rowSums(EBN_2010_cast)
+
+# Pianka
+EBN_2010_P <- cbind(t(combn(rownames(EBN10), 2)), 0)
+    for (i in 1:nrow(EBN_2010_P)) EBN_2010_P[i, 3] <- sum(EBN10[EBN_2010_P[i, 
+        1], ] * EBN10[EBN_2010_P[i, 2], ])/sqrt(sum(EBN10[EBN_2010_P[i, 1], 
+        ]^2) * sum(EBN10[EBN_2010_P[i, 2], ]^2))
+
+# Czekanowski
+EBN_2010_C <- cbind(t(combn(rownames(EBN10), 2)), 0)
+    for (i in 1:nrow(EBN_2010_C)) EBN_2010_C[i, 3] <- 1 - 0.5 * sum(abs((EBN10[EBN_2010_C[i, 
+        1], ] - EBN10[EBN_2010_C[i, 2], ])))
+
+plot(EBN_2010_P[,3], EBN_2010_C[,3],
+     main = "Niche Overlap Probabilities, EBN in 2010",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+```
+
+For EBN, 2011.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for EBN, 2011
+# Here, the package "EcoSimR" is needed
+
+# Setting the input data
+EBN11 <- EBN_2011_cast/rowSums(EBN_2011_cast)
+
+# Pianka
+EBN_2011_P <- cbind(t(combn(rownames(EBN11), 2)), 0)
+    for (i in 1:nrow(EBN_2011_P)) EBN_2011_P[i, 3] <- sum(EBN11[EBN_2011_P[i, 
+        1], ] * EBN11[EBN_2011_P[i, 2], ])/sqrt(sum(EBN11[EBN_2011_P[i, 1], 
+        ]^2) * sum(EBN11[EBN_2011_P[i, 2], ]^2))
+
+# Czekanowski
+EBN_2011_C <- cbind(t(combn(rownames(EBN11), 2)), 0)
+    for (i in 1:nrow(EBN_2011_C)) EBN_2011_C[i, 3] <- 1 - 0.5 * sum(abs((EBN11[EBN_2011_C[i, 
+        1], ] - EBN11[EBN_2011_C[i, 2], ])))
+
+plot(EBN_2011_P[,3], EBN_2011_C[,3],
+     main = "Niche Overlap Probabilities, EBN in 2011",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+```
+
+For EBN, 2012.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for EBN, 2012
+# Here, the package "EcoSimR" is needed
+
+# Setting the input data
+EBN12 <- EBN_2012_cast/rowSums(EBN_2012_cast)
+
+# Pianka
+EBN_2012_P <- cbind(t(combn(rownames(EBN12), 2)), 0)
+    for (i in 1:nrow(EBN_2012_P)) EBN_2012_P[i, 3] <- sum(EBN12[EBN_2012_P[i, 
+        1], ] * EBN12[EBN_2012_P[i, 2], ])/sqrt(sum(EBN12[EBN_2012_P[i, 1], 
+        ]^2) * sum(EBN12[EBN_2012_P[i, 2], ]^2))
+
+# Czekanowski
+EBN_2012_C <- cbind(t(combn(rownames(EBN12), 2)), 0)
+    for (i in 1:nrow(EBN_2012_C)) EBN_2012_C[i, 3] <- 1 - 0.5 * sum(abs((EBN12[EBN_2012_C[i, 
+        1], ] - EBN12[EBN_2012_C[i, 2], ])))
+
+plot(EBN_2012_P[,3], EBN_2012_C[,3],
+     main = "Niche Overlap Probabilities, EBN in 2012",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+```
+
+For EBN, 2013.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for EBN, 2013
+# Here, the package "EcoSimR" is needed
+
+# Setting the input data
+EBN13 <- EBN_2013_cast/rowSums(EBN_2013_cast)
+
+# Pianka
+EBN_2013_P <- cbind(t(combn(rownames(EBN13), 2)), 0)
+    for (i in 1:nrow(EBN_2013_P)) EBN_2013_P[i, 3] <- sum(EBN13[EBN_2013_P[i, 
+        1], ] * EBN13[EBN_2013_P[i, 2], ])/sqrt(sum(EBN13[EBN_2013_P[i, 1], 
+        ]^2) * sum(EBN13[EBN_2013_P[i, 2], ]^2))
+
+# Czekanowski
+EBN_2013_C <- cbind(t(combn(rownames(EBN13), 2)), 0)
+    for (i in 1:nrow(EBN_2013_C)) EBN_2013_C[i, 3] <- 1 - 0.5 * sum(abs((EBN13[EBN_2013_C[i, 
+        1], ] - EBN13[EBN_2013_C[i, 2], ])))
+
+plot(EBN_2013_P[,3], EBN_2013_C[,3],
+     main = "Niche Overlap Probabilities, EBN in 2013",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+```
+
+For EBN, 2014.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for EBN, 2014
+# Here, the package "EcoSimR" is needed
+
+# Setting the input data
+EBN14 <- EBN_2014_cast/rowSums(EBN_2014_cast)
+
+# Pianka
+EBN_2014_P <- cbind(t(combn(rownames(EBN14), 2)), 0)
+    for (i in 1:nrow(EBN_2014_P)) EBN_2014_P[i, 3] <- sum(EBN14[EBN_2014_P[i, 
+        1], ] * EBN14[EBN_2014_P[i, 2], ])/sqrt(sum(EBN14[EBN_2014_P[i, 1], 
+        ]^2) * sum(EBN14[EBN_2014_P[i, 2], ]^2))
+
+# Czekanowski
+EBN_2014_C <- cbind(t(combn(rownames(EBN14), 2)), 0)
+    for (i in 1:nrow(EBN_2014_C)) EBN_2014_C[i, 3] <- 1 - 0.5 * sum(abs((EBN14[EBN_2014_C[i, 
+        1], ] - EBN14[EBN_2014_C[i, 2], ])))
+
+plot(EBN_2014_P[,3], EBN_2014_C[,3],
+     main = "Niche Overlap Probabilities, EBN in 2014",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+```
+
+For EBN, 2015.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for EBN, 2015
+# Here, the package "EcoSimR" is needed
+
+# Setting the input data
+EBN15 <- EBN_2015_cast/rowSums(EBN_2015_cast)
+
+# Pianka
+EBN_2015_P <- cbind(t(combn(rownames(EBN15), 2)), 0)
+    for (i in 1:nrow(EBN_2015_P)) EBN_2015_P[i, 3] <- sum(EBN15[EBN_2015_P[i, 
+        1], ] * EBN15[EBN_2015_P[i, 2], ])/sqrt(sum(EBN15[EBN_2015_P[i, 1], 
+        ]^2) * sum(EBN15[EBN_2015_P[i, 2], ]^2))
+
+# Czekanowski
+EBN_2015_C <- cbind(t(combn(rownames(EBN15), 2)), 0)
+    for (i in 1:nrow(EBN_2015_C)) EBN_2015_C[i, 3] <- 1 - 0.5 * sum(abs((EBN15[EBN_2015_C[i, 
+        1], ] - EBN15[EBN_2015_C[i, 2], ])))
+
+plot(EBN_2015_P[,3], EBN_2015_C[,3],
+     main = "Niche Overlap Probabilities, EBN in 2015",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+```
+
+For PP, 2010.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for PP, 2010
+# Here, the package "EcoSimR" is needed
+
+# Setting the input data
+PP10 <- PP_2010_cast/rowSums(PP_2010_cast)
+
+# Pianka
+PP_2010_P <- cbind(t(combn(rownames(PP10), 2)), 0)
+    for (i in 1:nrow(PP_2010_P)) PP_2010_P[i, 3] <- sum(PP10[PP_2010_P[i, 
+        1], ] * PP10[PP_2010_P[i, 2], ])/sqrt(sum(PP10[PP_2010_P[i, 1], 
+        ]^2) * sum(PP10[PP_2010_P[i, 2], ]^2))
+
+# Czekanowski
+PP_2010_C <- cbind(t(combn(rownames(PP10), 2)), 0)
+    for (i in 1:nrow(PP_2010_C)) PP_2010_C[i, 3] <- 1 - 0.5 * sum(abs((PP10[PP_2010_C[i, 
+        1], ] - PP10[PP_2010_C[i, 2], ])))
+
+plot(PP_2010_P[,3], PP_2010_C[,3],
+     main = "Niche Overlap Probabilities, PP in 2010",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+```
+
+For PP, 2013.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for PP, 2013
+# Here, the package "EcoSimR" is needed
+
+# Setting the input data
+PP13 <- PP_2013_cast/rowSums(PP_2013_cast)
+
+# Pianka
+PP_2013_P <- cbind(t(combn(rownames(PP13), 2)), 0)
+    for (i in 1:nrow(PP_2013_P)) PP_2013_P[i, 3] <- sum(PP13[PP_2013_P[i, 
+        1], ] * PP13[PP_2013_P[i, 2], ])/sqrt(sum(PP13[PP_2013_P[i, 1], 
+        ]^2) * sum(PP13[PP_2013_P[i, 2], ]^2))
+
+# Czekanowski
+PP_2013_C <- cbind(t(combn(rownames(PP13), 2)), 0)
+    for (i in 1:nrow(PP_2013_C)) PP_2013_C[i, 3] <- 1 - 0.5 * sum(abs((PP13[PP_2013_C[i, 
+        1], ] - PP13[PP_2013_C[i, 2], ])))
+
+plot(PP_2013_P[,3], PP_2013_C[,3],
+     main = "Niche Overlap Probabilities, PP in 2013",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+```
+
+For PP, 2015.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for PP, 2015
+# Here, the package "EcoSimR" is needed
+
+# Setting the input data
+PP15 <- PP_2015_cast/rowSums(PP_2015_cast)
+
+# Pianka
+PP_2015_P <- cbind(t(combn(rownames(PP15), 2)), 0)
+    for (i in 1:nrow(PP_2015_P)) PP_2015_P[i, 3] <- sum(PP15[PP_2015_P[i, 
+        1], ] * PP15[PP_2015_P[i, 2], ])/sqrt(sum(PP15[PP_2015_P[i, 1], 
+        ]^2) * sum(PP15[PP_2015_P[i, 2], ]^2))
+
+# Czekanowski
+PP_2015_C <- cbind(t(combn(rownames(PP15), 2)), 0)
+    for (i in 1:nrow(PP_2015_C)) PP_2015_C[i, 3] <- 1 - 0.5 * sum(abs((PP15[PP_2015_C[i, 
+        1], ] - PP15[PP_2015_C[i, 2], ])))
+
+plot(PP_2015_P[,3], PP_2015_C[,3],
+     main = "Niche Overlap Probabilities, PP in 2015",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+  lines(PP15, col = "red")
+  abline(0,1, col = "orange")
+```
+
+
 
 
 
 - - - - - - - - - -
 # Results
-
-
-
 
