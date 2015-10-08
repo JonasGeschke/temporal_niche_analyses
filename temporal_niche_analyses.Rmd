@@ -533,7 +533,6 @@ PP_2015_cast <- PP_2015_cast[,-1]
 For EBN, 2007.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for EBN, 2007
-# Here, the package "EcoSimR" is needed
 
 # Setting the input data
 EBN07 <- EBN_2007_cast/rowSums(EBN_2007_cast)
@@ -560,7 +559,6 @@ plot(EBN_2007_P[,3], EBN_2007_C[,3],
 For EBN, 2008.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for EBN, 2008
-# Here, the package "EcoSimR" is needed
 
 # Setting the input data
 EBN08 <- EBN_2008_cast/rowSums(EBN_2008_cast)
@@ -587,7 +585,6 @@ plot(EBN_2008_P[,3], EBN_2008_C[,3],
 For EBN, 2009.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for EBN, 2009
-# Here, the package "EcoSimR" is needed
 
 # Setting the input data
 EBN09 <- EBN_2009_cast/rowSums(EBN_2009_cast)
@@ -614,7 +611,6 @@ plot(EBN_2009_P[,3], EBN_2009_C[,3],
 For EBN, 2010.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for EBN, 2010
-# Here, the package "EcoSimR" is needed
 
 # Setting the input data
 EBN10 <- EBN_2010_cast/rowSums(EBN_2010_cast)
@@ -641,7 +637,6 @@ plot(EBN_2010_P[,3], EBN_2010_C[,3],
 For EBN, 2011.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for EBN, 2011
-# Here, the package "EcoSimR" is needed
 
 # Setting the input data
 EBN11 <- EBN_2011_cast/rowSums(EBN_2011_cast)
@@ -668,7 +663,6 @@ plot(EBN_2011_P[,3], EBN_2011_C[,3],
 For EBN, 2012.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for EBN, 2012
-# Here, the package "EcoSimR" is needed
 
 # Setting the input data
 EBN12 <- EBN_2012_cast/rowSums(EBN_2012_cast)
@@ -695,7 +689,6 @@ plot(EBN_2012_P[,3], EBN_2012_C[,3],
 For EBN, 2013.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for EBN, 2013
-# Here, the package "EcoSimR" is needed
 
 # Setting the input data
 EBN13 <- EBN_2013_cast/rowSums(EBN_2013_cast)
@@ -722,7 +715,6 @@ plot(EBN_2013_P[,3], EBN_2013_C[,3],
 For EBN, 2014.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for EBN, 2014
-# Here, the package "EcoSimR" is needed
 
 # Setting the input data
 EBN14 <- EBN_2014_cast/rowSums(EBN_2014_cast)
@@ -749,7 +741,6 @@ plot(EBN_2014_P[,3], EBN_2014_C[,3],
 For EBN, 2015.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for EBN, 2015
-# Here, the package "EcoSimR" is needed
 
 # Setting the input data
 EBN15 <- EBN_2015_cast/rowSums(EBN_2015_cast)
@@ -776,7 +767,6 @@ plot(EBN_2015_P[,3], EBN_2015_C[,3],
 For PP, 2010.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for PP, 2010
-# Here, the package "EcoSimR" is needed
 
 # Setting the input data
 PP10 <- PP_2010_cast/rowSums(PP_2010_cast)
@@ -803,7 +793,6 @@ plot(PP_2010_P[,3], PP_2010_C[,3],
 For PP, 2013.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for PP, 2013
-# Here, the package "EcoSimR" is needed
 
 # Setting the input data
 PP13 <- PP_2013_cast/rowSums(PP_2013_cast)
@@ -830,7 +819,6 @@ plot(PP_2013_P[,3], PP_2013_C[,3],
 For PP, 2015.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for PP, 2015
-# Here, the package "EcoSimR" is needed
 
 # Setting the input data
 PP15 <- PP_2015_cast/rowSums(PP_2015_cast)
