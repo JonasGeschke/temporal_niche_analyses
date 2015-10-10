@@ -851,3 +851,70 @@ plot(PP_2015_P[,3], PP_2015_C[,3],
 - - - - - - - - - -
 # Results
 
+Overview graph with all Pianka and Czekanowski temporal niche probabilites for EBN 2007-2015 and Peru (Panguana) 2010, 2013 and 2015:
+
+```{r, eval=FALSE}
+par(mfrow=c(4,3))
+  plot(EBN_2007_P[,3], EBN_2007_C[,3],
+     main = "EBN, 2007",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  plot(EBN_2008_P[,3], EBN_2008_C[,3],
+     main = "EBN, 2008",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  plot(EBN_2009_P[,3], EBN_2009_C[,3],
+     main = "EBN, 2009",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  plot(EBN_2010_P[,3], EBN_2010_C[,3],
+     main = "EBN, 2010",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  plot(EBN_2011_P[,3], EBN_2011_C[,3],
+     main = "EBN, 2011",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  plot(EBN_2012_P[,3], EBN_2012_C[,3],
+     main = "EBN, 2012",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  plot(EBN_2013_P[,3], EBN_2013_C[,3],
+     main = "EBN, 2013",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  plot(EBN_2014_P[,3], EBN_2014_C[,3],
+     main = "EBN, 2014",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  plot(EBN_2015_P[,3], EBN_2015_C[,3],
+     main = "EBN, 2015",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  plot(PP_2010_P[,3], PP_2010_C[,3],
+     main = "PP, 2010",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  plot(PP_2013_P[,3], PP_2013_C[,3],
+     main = "PP, 2013",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  plot(PP_2015_P[,3], PP_2015_C[,3],
+     main = "PP, 2015",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+#  mtext("Niche Overlap Probabilities, each cross = one pair of spp")
+```
+
