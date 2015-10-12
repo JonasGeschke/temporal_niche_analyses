@@ -32,10 +32,10 @@ In here, we set the working directory, which one might have to adapt or change i
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 
 ###### Installing packages (if needed: delete the hashtag in front of the code!) ######
-# install.packages("lubridate")
-# install.packages("ggplot2")
-# install.packages("reshape")
-# install.packages("EcoSimR")
+install.packages("lubridate")
+install.packages("ggplot2")
+install.packages("reshape")
+install.packages("EcoSimR")
 #######################################################################################
 
 # Loading packages
@@ -81,7 +81,7 @@ names(Gdata)
 ```
 
 
-Now we have a table that we can further process.
+Now, we have a table that we can further process.
 First of all, we do not need the columns "notes" and "iid" (individual ID) and correct some oversight mistakes within the datatable. Also, we do have 2 levels of trust within the whole datatable - 1 and 2. Trust level "2" is good, level "1" not so much. Those datapoint with no trust level at all are deleted at once.
 
 ```{r, results='hide'}
@@ -525,6 +525,37 @@ PP_2015_cast <- cast(aggregate(PP_2015$value,
 rownames(PP_2015_cast) <- PP_2015_cast$Group.1
 PP_2015_cast <- PP_2015_cast[,-1]
 ```
+
+
+
+### Running the Pianka and Czekanowski niche overlap probability for each site
+
+For EBN.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for EBN
+
+# Setting the input data
+EBN <- EBN_cast/rowSums(EBN_cast)
+
+# Pianka
+EBN_P <- cbind(t(combn(rownames(EBN), 2)), 0)
+    for (i in 1:nrow(EBN_P)) EBN_P[i, 3] <- sum(EBN[EBN_P[i, 
+        1], ] * EBN[EBN_P[i, 2], ])/sqrt(sum(EBN[EBN_P[i, 1], 
+        ]^2) * sum(EBN[EBN_P[i, 2], ]^2))
+
+# Czekanowski
+EBN_C <- cbind(t(combn(rownames(EBN), 2)), 0)
+    for (i in 1:nrow(EBN_C)) EBN_C[i, 3] <- 1 - 0.5 * sum(abs((EBN[EBN_C[i, 
+        1], ] - EBN[EBN_C[i, 2], ])))
+
+plot(EBN_P[,3], EBN_C[,3],
+     main = "Niche Overlap Probabilities in EBN",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+```
+
 
 
 
