@@ -32,10 +32,10 @@ In here, we set the working directory, which one might have to adapt or change i
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 
 ###### Installing packages (if needed: delete the hashtag in front of the code!) ######
-install.packages("lubridate")
-install.packages("ggplot2")
-install.packages("reshape")
-install.packages("EcoSimR")
+# install.packages("lubridate")
+# install.packages("ggplot2")
+# install.packages("reshape")
+# install.packages("EcoSimR")
 #######################################################################################
 
 # Loading packages
@@ -307,6 +307,24 @@ EBN_cast <- EBN_cast[,-1]
 # test <- prop.table(as.matrix(EBN_cast), 1)
 ```
 
+`PP_cast`
+```{r, results='hide'}
+# Creating a table in which we have relative values lateron
+# For now using the Gdata_PP dataset only
+# Here, the package "reshape" is needed
+PP_cast <- cast(aggregate(Gdata_PP$value,
+                       by = list(Gdata_PP$spp, Gdata_PP$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+
+# Changing the species to front column and deleting the species column
+rownames(PP_cast) <- PP_cast$Group.1
+PP_cast <- PP_cast[,-1]
+```
+
 
 Creating subset-cast datasets for each year and site:
 
@@ -549,13 +567,38 @@ EBN_C <- cbind(t(combn(rownames(EBN), 2)), 0)
         1], ] - EBN[EBN_C[i, 2], ])))
 
 plot(EBN_P[,3], EBN_C[,3],
-     main = "Niche Overlap Probabilities in EBN",
+     main = "Niche Overlap Probabilities in EBN, \n data from 2007-2015",
      xlab =  "Pianka",
      ylab = "Czekanowski",
      pch = 3)
   mtext("(Each cross symbolizes one pair of species)")
 ```
 
+For PP.
+```{r, results='hide'}
+# Pianka and Czekanowski analysis for PP
+
+# Setting the input data
+PP <- PP_cast/rowSums(PP_cast)
+
+# Pianka
+PP_P <- cbind(t(combn(rownames(PP), 2)), 0)
+    for (i in 1:nrow(PP_P)) PP_P[i, 3] <- sum(PP[PP_P[i, 
+        1], ] * PP[PP_P[i, 2], ])/sqrt(sum(PP[PP_P[i, 1], 
+        ]^2) * sum(PP[PP_P[i, 2], ]^2))
+
+# Czekanowski
+PP_C <- cbind(t(combn(rownames(PP), 2)), 0)
+    for (i in 1:nrow(PP_C)) PP_C[i, 3] <- 1 - 0.5 * sum(abs((PP[PP_C[i, 
+        1], ] - PP[PP_C[i, 2], ])))
+
+plot(PP_P[,3], PP_C[,3],
+     main = "Niche Overlap Probabilities in Peru Panguana, \n data from 2010, 2013 and 2015",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+```
 
 
 
