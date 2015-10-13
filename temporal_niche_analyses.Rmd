@@ -26,7 +26,7 @@ The data used in our analyses come from the long-term monitoring trapping of the
 # Methodology: Technical Thinking Process
 
 1. co-occurrence approach => not really good results, need to specify actual research question and thereby subsettings of the data => WORKS NO
-2. found paper (mentioned above) => temporal overlap approach
+2. found paper (mentioned above) => niche overlap approach
 3. Pianka and Czekanowski => only indices, so edit of the background formular that it fits our needs => WORKS YES
 4. ROSARIO: works with looping time periods (one year, one day) => we dont have proper data => WORKS NO
 5. RA3: null-model approach, which randomized also the null values => transforms our data into pseudo-data => WORKS NO
