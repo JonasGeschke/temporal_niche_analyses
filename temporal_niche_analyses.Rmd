@@ -414,6 +414,12 @@ write.table(PP_C, file = "Temporal_niche_overlap_probabilities_PP_Czekanowski.tx
             sep = "\t",
             row.names = F,
             col.names = c("Species 1", "Species 2", "Temporal Niche Overlap Probability"))
+
+# Re-load tables
+EBN_P_test <- read.table("Temporal_niche_overlap_probabilities_EBN_Pianka.txt",
+                   header = T,
+                   sep = ";",
+                   na.strings = "")
 ```
 
 
