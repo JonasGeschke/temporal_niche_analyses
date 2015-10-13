@@ -349,11 +349,15 @@ EBN_P <- cbind(t(combn(rownames(EBN), 2)), 0)
     for (i in 1:nrow(EBN_P)) EBN_P[i, 3] <- sum(EBN[EBN_P[i, 
         1], ] * EBN[EBN_P[i, 2], ])/sqrt(sum(EBN[EBN_P[i, 1], 
         ]^2) * sum(EBN[EBN_P[i, 2], ]^2))
+# Renaming columns
+colnames(EBN_P) <- c("Spp1", "Spp2", "TempOverlapProb")
 
 # Czekanowski
 EBN_C <- cbind(t(combn(rownames(EBN), 2)), 0)
     for (i in 1:nrow(EBN_C)) EBN_C[i, 3] <- 1 - 0.5 * sum(abs((EBN[EBN_C[i, 
         1], ] - EBN[EBN_C[i, 2], ])))
+# Renaming columns
+colnames(EBN_C) <- c("Spp1", "Spp2", "TempOverlapProb")
 
 # Creating an overview plot on the results
 plot(EBN_P[,3], EBN_C[,3],
@@ -362,22 +366,32 @@ plot(EBN_P[,3], EBN_C[,3],
      ylab = "Czekanowski",
      pch = 3)
   mtext("(Each cross symbolizes one pair of species)")
+```
+
+```{r, results='hide'}
+# Setting target folder (Dropbox) as working directory
+setwd("~/Dropbox/Co-occurrence/Results/Tables")
 
 # Save results as tables
 write.table(EBN_P, file = "Temporal_niche_overlap_probabilities_EBN_Pianka.txt",
             sep = "\t",
-            row.names = F,
-            col.names = c("Species 1", "Species 2", "Temporal Niche Overlap Probability"))
+            row.names = F)
 write.table(EBN_C, file = "Temporal_niche_overlap_probabilities_EBN_Czekanowski.txt",
             sep = "\t",
-            row.names = F,
-            col.names = c("Species 1", "Species 2", "Temporal Niche Overlap Probability"))
+            row.names = F)
 
-EBN_P_test <- read.table("Temporal_niche_overlap_probabilities_EBN_Pianka.txt",
+# Re-load tables
+EBN_P <- read.table("Temporal_niche_overlap_probabilities_EBN_Pianka.txt",
                    header = T,
-                   sep = ";",
-                   na.strings = "")
+                   sep = "\t")
+EBN_C <- read.table("Temporal_niche_overlap_probabilities_EBN_Czekanowski.txt",
+                   header = T,
+                   sep = "\t")
+
+# Re-setting to process working directory
+setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 ```
+
 
 For PP.
 ```{r, results='hide'}
@@ -391,11 +405,15 @@ PP_P <- cbind(t(combn(rownames(PP), 2)), 0)
     for (i in 1:nrow(PP_P)) PP_P[i, 3] <- sum(PP[PP_P[i, 
         1], ] * PP[PP_P[i, 2], ])/sqrt(sum(PP[PP_P[i, 1], 
         ]^2) * sum(PP[PP_P[i, 2], ]^2))
+# Renaming columns
+colnames(PP_P) <- c("Spp1", "Spp2", "TempOverlapProb")
 
 # Czekanowski
 PP_C <- cbind(t(combn(rownames(PP), 2)), 0)
     for (i in 1:nrow(PP_C)) PP_C[i, 3] <- 1 - 0.5 * sum(abs((PP[PP_C[i, 
         1], ] - PP[PP_C[i, 2], ])))
+# Renaming columns
+colnames(PP_C) <- c("Spp1", "Spp2", "TempOverlapProb")
 
 # Creating an overview plot on the results
 plot(PP_P[,3], PP_C[,3],
@@ -404,24 +422,31 @@ plot(PP_P[,3], PP_C[,3],
      ylab = "Czekanowski",
      pch = 3)
   mtext("(Each cross symbolizes one pair of species)")
-  
+```
+
+```{r, results='hide'}
+# Setting target folder (Dropbox) as working directory
+setwd("~/Dropbox/Co-occurrence/Results/Tables")
+
 # Save results as tables
 write.table(PP_P, file = "Temporal_niche_overlap_probabilities_PP_Pianka.txt",
             sep = "\t",
-            row.names = F,
-            col.names = c("Species 1", "Species 2", "Temporal Niche Overlap Probability"))
+            row.names = F)
 write.table(PP_C, file = "Temporal_niche_overlap_probabilities_PP_Czekanowski.txt",
             sep = "\t",
-            row.names = F,
-            col.names = c("Species 1", "Species 2", "Temporal Niche Overlap Probability"))
+            row.names = F)
 
 # Re-load tables
-EBN_P_test <- read.table("Temporal_niche_overlap_probabilities_EBN_Pianka.txt",
+PP_P <- read.table("Temporal_niche_overlap_probabilities_PP_Pianka.txt",
                    header = T,
-                   sep = ";",
-                   na.strings = "")
-```
+                   sep = "\t")
+PP_C <- read.table("Temporal_niche_overlap_probabilities_PP_Czekanowski.txt",
+                   header = T,
+                   sep = "\t")
 
+# Re-setting to process working directory
+setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
+```
 
 
 
