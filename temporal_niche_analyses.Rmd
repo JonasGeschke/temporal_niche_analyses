@@ -461,11 +461,12 @@ cast_PP_75 <- cast_PP[rownames(cast_PP) %in% spec5_PP_P1 | rownames(cast_PP) %in
 ## compare the amount of species in the raw and the subsetted dataset
 nrow(cast_PP)
 nrow(cast_PP_75)
-nrow(cast_PP_75)/nrow(cast_PP)*100
+nrow(cast_PP_75)/nrow(cast_PP)*100 #percentage of species remaining
+choose(nrow(cast_PP_75),2)/choose(nrow(cast_PP),2)*100 #percentage of combinations remaining
 ```
 ```{r}
 #mod of ra4 function {EcosimR} to avoid error msg
-ra4_mod <- function (speciesData) 
+ra4_mod <- function(speciesData) 
 {
     NonZeroRowShuffle <- function(vec = runif(10)) {
         nonzero <- which(vec > 0)
@@ -478,8 +479,8 @@ ra4_mod <- function (speciesData)
 }
 #ra4 randomization
 RA4_pianka <- function(data, iterations = 1){
-  data_spp <- data.frame(spp1=factor(rep(1, choose(nrow(cast_PP_75), 2))),
-                         spp2=factor(rep(1, choose(nrow(cast_PP_75), 2))))
+  data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(cast_PP_75), 2))),
+                         Spp2 = factor(rep(1, choose(nrow(cast_PP_75), 2))))
   repeat{
   #ra4 randomization
   data_rand <- ra4_mod(data)
@@ -487,20 +488,32 @@ RA4_pianka <- function(data, iterations = 1){
   rel_data <- data_rand/rowSums(data_rand)
   # Pianka
   data_p <- cbind(t(combn(rownames(rel_data), 2)), 0)
-    for (i in 1:nrow(data_p)) data_p[i, 3] <- sum(rel_data[data_p[i, 
+    for (i in 1:nrow(data_p))
+      data_p[i, 3] <- sum(rel_data[data_p[i, 
         1], ] * rel_data[data_p[i, 2], ])/sqrt(sum(rel_data[data_p[i, 1], 
         ]^2) * sum(rel_data[data_p[i, 2], ]^2))
   data_spp[,c(1,2)] <- data_p[,c(1,2)]
-  data_spp <- cbind(data_spp, data_p[,3])
+  data_spp <- data.frame(data_spp, RA4prob = data_p[,3])
   if (ncol(data_spp)-2 == iterations[1]){break} 
   }
   write.table(data_spp,
-              file = paste("pianka", as.character(bquote(data)), date(), ".txt", sep=""),
+              file = paste("pianka", as.character(bquote(data)), date(), ".txt", sep="_"),
               sep = "\t",
               row.names = F)
   return(data_spp)
 }
 ```
+# Setting the input data
+PP <- cast_PP/rowSums(cast_PP)
+
+# Pianka
+PP_P <- cbind(t(combn(rownames(PP), 2)), 0)
+    for (i in 1:nrow(PP_P))
+    PP_P[i, 3] <- sum(PP[PP_P[i, 
+        1], ] * PP[PP_P[i, 2], ])/sqrt(sum(PP[PP_P[i, 1], 
+        ]^2) * sum(PP[PP_P[i, 2], ]^2))
+# Renaming columns
+colnames(PP_P) <- c("Spp1", "Spp2", "TempOverlapProb")
 
 - - - - - - - - - -
 # Results
