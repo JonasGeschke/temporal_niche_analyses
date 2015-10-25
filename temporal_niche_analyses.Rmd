@@ -311,10 +311,6 @@ rownames(cast_EBN) <- cast_EBN$Group.1
 cast_EBN <- cast_EBN[,-1]
 ```
 
-```{r, eval=FALSE}
-# test <- prop.table(as.matrix(EBN_cast), 1)
-```
-
 `cast_PP`
 ```{r, results='hide'}
 # Creating a table in which we have relative values lateron
