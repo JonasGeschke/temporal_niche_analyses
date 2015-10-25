@@ -447,9 +447,53 @@ PP_C <- read.table("Temporal_niche_overlap_probabilities_PP_Czekanowski.txt",
 # Re-setting to process working directory
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 ```
+```{r}
+# get the species of the species pairs that show > 0.75 overlap indicated by pianka index
+#quant_PP_P <- quantile(PP_P$TempOverlapProb, 0.995)
+spec5_PP_P1 <- PP_P$Spp1[PP_P$TempOverlapProb>=0.75]
+spec5_PP_P2 <- PP_P$Spp2[PP_P$TempOverlapProb>=0.75]
 
+#subset GData_PP to only include the species that are among the species pair that show the 5% highest niche overlap
 
+## subset Gdata_PP
+cast_PP_75 <- cast_PP[rownames(cast_PP) %in% spec5_PP_P1 | rownames(cast_PP) %in% spec5_PP_P2,]
 
+## compare the amount of species in the raw and the subsetted dataset
+nrow(cast_PP)
+nrow(cast_PP_75)
+nrow(cast_PP_75)/nrow(cast_PP)*100
+```
+```{r}
+#mod of ra4 function {EcosimR} to avoid error msg
+ra4_mod <- function (speciesData) 
+{
+    NonZeroRowShuffle <- function(vec = runif(10)) {
+        nonzero <- which(vec > 0)
+        shuffledvec <- vec
+        shuffledvec[nonzero] <- vec[sample(nonzero, length(nonzero))] #mod: added lenght() to avoid error msg
+        return(shuffledvec)
+    }
+    RM <- t(apply(speciesData, 1, NonZeroRowShuffle))
+    return(RM)
+}
+#ra4 randomization
+RA4_pianka <- function(data, iterations = 1){
+  repeat{
+  #ra4 randomization
+  data <- ra4_mod(data)
+  #convert absolute to relative abundance data
+  rel_data <- data/rowSums(data)
+  # Pianka
+  data_p <- cbind(t(combn(rownames(rel_data), 2)), 0)
+    for (i in 1:nrow(data_p)) data_p[i, 3] <- sum(rel_data[data_p[i, 
+        1], ] * rel_data[data_p[i, 2], ])/sqrt(sum(rel_data[data_p[i, 1], 
+        ]^2) * sum(rel_data[data_p[i, 2], ]^2))
+  data_spp[,c(1,2)] <- data_p[,c(1,2)]
+  data_spp <- cbind(data_spp, data_p[,3])
+  if (ncol(data_spp)-2 == iterations[1]){break} 
+  }
+}
+```
 
 - - - - - - - - - -
 # Results
