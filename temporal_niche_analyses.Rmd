@@ -471,12 +471,14 @@ ra4_mod <- function(speciesData)
     NonZeroRowShuffle <- function(vec = runif(10)) {
         nonzero <- which(vec > 0)
         shuffledvec <- vec
-        shuffledvec[nonzero] <- vec[sample(nonzero, length(nonzero))] #mod: added lenght() to avoid error msg
+        shuffledvec[nonzero] <- vec[sample(nonzero, length(nonzero))] #mod: added length() to avoid error msg
         return(shuffledvec)
     }
     RM <- t(apply(speciesData, 1, NonZeroRowShuffle))
+    rownames(RM) <- rownames(speciesData)
     return(RM)
 }
+
 #ra4 randomization
 RA4_pianka <- function(data, iterations = 1){
   data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(cast_PP_75), 2))),
