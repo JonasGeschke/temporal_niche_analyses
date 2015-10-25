@@ -478,6 +478,8 @@ ra4_mod <- function (speciesData)
 }
 #ra4 randomization
 RA4_pianka <- function(data, iterations = 1){
+  data_spp <- data.frame(spp1=factor(),
+                         spp2=factor())
   repeat{
   #ra4 randomization
   data <- ra4_mod(data)
@@ -492,9 +494,10 @@ RA4_pianka <- function(data, iterations = 1){
   data_spp <- cbind(data_spp, data_p[,3])
   if (ncol(data_spp)-2 == iterations[1]){break} 
   }
-  write.table(data_spp, file = paste("pianka", as.character(bquote(data)), date(), ".txt", sep="")
-            sep = "\t",
-            row.names = F)
+  write.table(data_spp,
+              file = paste("pianka", as.character(bquote(data)), date(), ".txt", sep=""),
+              sep = "\t",
+              row.names = F)
   return(data_spp)
 }
 ```
