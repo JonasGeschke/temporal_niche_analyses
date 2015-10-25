@@ -475,8 +475,8 @@ ra4_mod <- function(speciesData)
         return(shuffledvec)
     }
     #split the dataset into rows which have more than one observation and rows that have only one
-    data_mult_obs <- speciesData[rowSums(data != 0) > 1,]
-    data_solo_obs <- data[rowSums(data != 0) == 1,]
+    data_mult_obs <- speciesData[rowSums(speciesData != 0) > 1,]
+    data_solo_obs <- speciesData[rowSums(speciesData != 0) == 1,]
     RM <- t(apply(data_mult_obs, 1, NonZeroRowShuffle))
     rownames(RM) <- rownames(data_mult_obs)
     RM <- rbind(RM, data_solo_obs)
@@ -486,20 +486,20 @@ ra4_mod <- function(speciesData)
 #ra4 randomization
 RA4_nicheoverlap <- function(data, method = "missing", iterations = 1, site = "missing")
   {if(site %in% c("PP", "EBN")){
-    data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(cast_PP_75), 2))),
-                           Spp2 = factor(rep(1, choose(nrow(cast_PP_75), 2))))
+    data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(data), 2))),
+                           Spp2 = factor(rep(1, choose(nrow(data), 2))))
     repeat{
       #convert absolute to relative abundance data
       rel_data <- data/rowSums(data)
       #ra4 randomization
       data_rand <- ra4_mod(rel_data)
-      if(method == "pianka"){
+      if(method[1] == "pianka"){
         # Pianka
         data_p <- cbind(t(combn(rownames(data_rand), 2)), 0)
         for (i in 1:nrow(data_p)){
           data_p[i, 3] <- sum(data_rand[data_p[i,1],] * data_rand[data_p[i,2],])/sqrt(sum(data_rand[data_p[i,1],]^2) * sum(data_rand[data_p[i, 2],]^2))
           }}
-      {if(method == "czekanowski"){
+      {if(method[1] == "czekanowski"){
         # Czekanowski
         data_p <- cbind(t(combn(rownames(data_rand), 2)), 0)
         for (i in 1:nrow(data_p)){
@@ -508,13 +508,14 @@ RA4_nicheoverlap <- function(data, method = "missing", iterations = 1, site = "m
       {return("Error: Please set method as pianka or czekanowski")}
       }
       data_spp[,c(1,2)] <- data_p[,c(1,2)]
-      data_spp <- data.frame(data_spp, RA4prob = data_p[,3])
+      data_spp <- data.frame(data_spp, data_p[,3])
       if (ncol(data_spp)-2 == iterations[1]){break}
     }
     if("pianka" %in% list.files()|"czekanowski" %in% list.files()){}
     {dir_list <- c("pianka", "czekanowski", "pianka/EBN", "pianka/PP", "czekanowski/EBN", "czekanowski/PP")
     for(i in dir_list){dir.create(i)}
     }
+    colnames(data_spp) <- c("Spp1", "Spp2", (paste("RA4prob", 1:(ncol(data_spp)-2), sep = "_")))
     write.table(data_spp,
                 file = paste("~/", method, "/", site, "/", method,"_", site,"_", Sys.Date(), "_",
                              format(Sys.time(), "%H-%M"), ".txt", sep=""),
@@ -529,13 +530,19 @@ RA4_nicheoverlap <- function(data, method = "missing", iterations = 1, site = "m
 
 ```{r}
 #read in the results
-readin <- function()
-```
-```{r}
-if("pianka" %in% list.files()){}
-{dir_list <- c("pianka", "czekanowski", "pianka/EBN", "pianka/PP", "czekanowski/EBN", "czekanowski/PP")
-for(i in dir_list){dir.create(i)}
-}
+readin <- function(site, method){
+  file_list <- list.files(paste(getwd(), "/", method, "/", site, sep=""))
+  #initialize empty dataframe
+  data <- read.table(paste(getwd(), "/", method, "/", site, "/", file_list[1], sep=""), header = TRUE)
+  for (i in file_list[-1]) {
+    #read in the seperate files each indicated by the id number
+    readin <- read.table(paste(getwd(), "/", method, "/", site, "/", i, sep=""), header = TRUE)
+    #cbind the readin data into the dataframe data
+    data <- cbind(data, readin[,3:ncol(readin)])
+  }
+  colnames(data) <- c("Spp1", "Spp2", (paste("RA4prob", 1:(ncol(data)-2), sep = "_")))
+    return(data)
+  }
 
 ```
 
