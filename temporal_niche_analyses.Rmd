@@ -488,7 +488,7 @@ ra4_mod <- function(speciesData)
 }
 
 #ra4 randomization
-RA4_pianka <- function(data, iterations = 1, site = "PP")
+RA4_pianka <- function(data, iterations = 1, site = "missing")
   {if(site %in% c("PP", "EBN")){
     data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(cast_PP_75), 2))),
                            Spp2 = factor(rep(1, choose(nrow(cast_PP_75), 2))))
@@ -508,13 +508,13 @@ RA4_pianka <- function(data, iterations = 1, site = "PP")
       if (ncol(data_spp)-2 == iterations[1]){break}
       }
     write.table(data_spp,
-                file = paste("pianka", site, Sys.Date(),
-                             format(Sys.time(), "%H-%M"), ".txt", sep="_"),
+                file = paste("~/", site, "/", "pianka","_", site,"_", Sys.Date(), "_",
+                             format(Sys.time(), "%H-%M"), ".txt", sep=""),
                 sep = "\t",
                 row.names = F)
     return(data_spp)
   }
-  {return("Please set site to EBN or PP")}
+  {return("Error: Please set site to EBN or PP")}
   }
 ```
 
