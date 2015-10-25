@@ -447,6 +447,9 @@ PP_C <- read.table("Temporal_niche_overlap_probabilities_PP_Czekanowski.txt",
 # Re-setting to process working directory
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 ```
+
+
+
 ```{r}
 # get the species of the species pairs that show > 0.75 overlap indicated by pianka index
 #quant_PP_P <- quantile(PP_P$TempOverlapProb, 0.995)
@@ -464,6 +467,7 @@ nrow(cast_PP_75)
 nrow(cast_PP_75)/nrow(cast_PP)*100 #percentage of species remaining
 choose(nrow(cast_PP_75),2)/choose(nrow(cast_PP),2)*100 #percentage of combinations remaining
 ```
+
 ```{r}
 #mod of ra4 function {EcosimR} to avoid error msg
 ra4_mod <- function(speciesData) 
@@ -474,47 +478,52 @@ ra4_mod <- function(speciesData)
         shuffledvec[nonzero] <- vec[sample(nonzero, length(nonzero))] #mod: added length() to avoid error msg
         return(shuffledvec)
     }
-    RM <- t(apply(speciesData, 1, NonZeroRowShuffle))
-    rownames(RM) <- rownames(speciesData)
+    #split the dataset into rows which have more than one observation and rows that have only one
+    data_mult_obs <- speciesData[rowSums(data != 0) > 1,]
+    data_solo_obs <- data[rowSums(data != 0) == 1,]
+    RM <- t(apply(data_mult_obs, 1, NonZeroRowShuffle))
+    rownames(RM) <- rownames(data_mult_obs)
+    RM <- rbind(RM, data_solo_obs)
     return(RM)
 }
 
 #ra4 randomization
-RA4_pianka <- function(data, iterations = 1){
-  data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(cast_PP_75), 2))),
-                         Spp2 = factor(rep(1, choose(nrow(cast_PP_75), 2))))
-  repeat{
-  #convert absolute to relative abundance data
-  rel_data <- data/rowSums(data)
-  #ra4 randomization
-  data_rand <- ra4_mod(rel_data)
-  # Pianka
-  data_p <- cbind(t(combn(rownames(data_rand), 2)), 0)
-    for (i in 1:nrow(data_p)){
-      data_p[i, 3] <- sum(data_rand[data_p[i,1],] * data_rand[data_p[i,2],])/sqrt(sum(data_rand[data_p[i, 1],]^2) * sum(data_rand[data_p[i, 2],]^2))
+RA4_pianka <- function(data, iterations = 1, site = "PP")
+  {if(site %in% c("PP", "EBN")){
+    data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(cast_PP_75), 2))),
+                           Spp2 = factor(rep(1, choose(nrow(cast_PP_75), 2))))
+    repeat{
+      #convert absolute to relative abundance data
+      rel_data <- data/rowSums(data)
+      #ra4 randomization
+      data_rand <- ra4_mod(rel_data)
+      # Pianka
+      data_p <- cbind(t(combn(rownames(data_rand), 2)), 0)
+      for (i in 1:nrow(data_p)){
+        data_p[i, 3] <- sum(data_rand[data_p[i,1],] * data_rand[data_p[i,2],])/sqrt(sum(data_rand[data_p[i,1],]^2) * sum(data_rand[data_p[i, 2],]^2))
+        }
+      # Czekanowski could be added here
+      data_spp[,c(1,2)] <- data_p[,c(1,2)]
+      data_spp <- data.frame(data_spp, RA4prob = data_p[,3])
+      if (ncol(data_spp)-2 == iterations[1]){break}
       }
-  data_spp[,c(1,2)] <- data_p[,c(1,2)]
-  data_spp <- data.frame(data_spp, RA4prob = data_p[,3])
-  if (ncol(data_spp)-2 == iterations[1]){break} 
+    write.table(data_spp,
+                file = paste("pianka", site, Sys.Date(),
+                             format(Sys.time(), "%H-%M"), ".txt", sep="_"),
+                sep = "\t",
+                row.names = F)
+    return(data_spp)
   }
-  write.table(data_spp,
-              file = paste("pianka", as.character(bquote(data)), date(), ".txt", sep="_"),
-              sep = "\t",
-              row.names = F)
-  return(data_spp)
-}
+  {return("Please set site to EBN or PP")}
+  }
 ```
-# Setting the input data
-PP <- cast_PP/rowSums(cast_PP)
 
-# Pianka
-PP_P <- cbind(t(combn(rownames(PP), 2)), 0)
-    for (i in 1:nrow(PP_P))
-    PP_P[i, 3] <- sum(PP[PP_P[i, 
-        1], ] * PP[PP_P[i, 2], ])/sqrt(sum(PP[PP_P[i, 1], 
-        ]^2) * sum(PP[PP_P[i, 2], ]^2))
-# Renaming columns
-colnames(PP_P) <- c("Spp1", "Spp2", "TempOverlapProb")
+
+```{r}
+#read in the results
+readin <- function()
+```
+
 
 - - - - - - - - - -
 # Results
