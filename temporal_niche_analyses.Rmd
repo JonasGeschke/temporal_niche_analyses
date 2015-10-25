@@ -516,7 +516,7 @@ RA4_nicheoverlap <- function(data, method = "missing", iterations = 1, site = "m
       if (ncol(data_spp)-2 == iterations[1]){break}
       }
     write.table(data_spp,
-                file = paste("~/", site, "/", "pianka","_", site,"_", Sys.Date(), "_",
+                file = paste("~/", method, "/", site, "/", method,"_", site,"_", Sys.Date(), "_",
                              format(Sys.time(), "%H-%M"), ".txt", sep=""),
                 sep = "\t",
                 row.names = F)
