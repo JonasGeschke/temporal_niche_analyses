@@ -510,7 +510,11 @@ RA4_nicheoverlap <- function(data, method = "missing", iterations = 1, site = "m
       data_spp[,c(1,2)] <- data_p[,c(1,2)]
       data_spp <- data.frame(data_spp, RA4prob = data_p[,3])
       if (ncol(data_spp)-2 == iterations[1]){break}
-      }
+    }
+    if("pianka" %in% list.files()|"czekanowski" %in% list.files()){}
+    {dir_list <- c("pianka", "czekanowski", "pianka/EBN", "pianka/PP", "czekanowski/EBN", "czekanowski/PP")
+    for(i in dir_list){dir.create(i)}
+    }
     write.table(data_spp,
                 file = paste("~/", method, "/", site, "/", method,"_", site,"_", Sys.Date(), "_",
                              format(Sys.time(), "%H-%M"), ".txt", sep=""),
@@ -526,6 +530,13 @@ RA4_nicheoverlap <- function(data, method = "missing", iterations = 1, site = "m
 ```{r}
 #read in the results
 readin <- function()
+```
+```{r}
+if("pianka" %in% list.files()){}
+{dir_list <- c("pianka", "czekanowski", "pianka/EBN", "pianka/PP", "czekanowski/EBN", "czekanowski/PP")
+for(i in dir_list){dir.create(i)}
+}
+
 ```
 
 
