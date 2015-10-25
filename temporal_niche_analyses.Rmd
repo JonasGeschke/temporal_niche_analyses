@@ -492,6 +492,10 @@ RA4_pianka <- function(data, iterations = 1){
   data_spp <- cbind(data_spp, data_p[,3])
   if (ncol(data_spp)-2 == iterations[1]){break} 
   }
+  write.table(data_spp, file = paste("pianka", as.character(bquote(data)), date(), ".txt", sep="")
+            sep = "\t",
+            row.names = F)
+  return(data_spp)
 }
 ```
 
