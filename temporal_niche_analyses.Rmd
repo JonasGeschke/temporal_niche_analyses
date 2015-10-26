@@ -532,12 +532,12 @@ ra4_mod <- function(speciesData) {
 }
 
 #ra4 randomization
-RA4_nicheoverlap <- function(data, method = "missing", randomization = TRUE, iterations = 1, site = "missing"){
+nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, site = "missing"){
   if(site %in% c("PP", "EBN")){
     data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(data), 2))),
                            Spp2 = factor(rep(1, choose(nrow(data), 2))))
     repeat{
-      if(randomization == TRUE){
+      if(ra4 == TRUE){
         #ra4 randomization
         data_rand <- ra4_mod(data)
         #convert absolute to relative abundance data
