@@ -532,26 +532,29 @@ ra4_mod <- function(speciesData) {
 }
 
 #ra4 randomization
-RA4_nicheoverlap <- function(data, method = "missing", iterations = 1, site = "missing"){
+RA4_nicheoverlap <- function(data, method = "missing", randomization = TRUE, iterations = 1, site = "missing"){
   if(site %in% c("PP", "EBN")){
     data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(data), 2))),
                            Spp2 = factor(rep(1, choose(nrow(data), 2))))
     repeat{
-      #convert absolute to relative abundance data
-      rel_data <- data/rowSums(data)
-      #ra4 randomization
-      data_rand <- ra4_mod(rel_data)
+      if(randomization == TRUE){
+        #ra4 randomization
+        data_rand <- ra4_mod(data)
+        #convert absolute to relative abundance data
+        rel_data <- data_rand/rowSums(data_rand)} else {
+          #convert absolute to relative abundance data
+          rel_data <- data/rowSums(data)}
       if(method == "pianka"){
         # Pianka
-        data_p <- cbind(t(combn(rownames(data_rand), 2)), 0)
+        data_p <- cbind(t(combn(rownames(rel_data), 2)), 0)
         for (i in 1:nrow(data_p)){
-          data_p[i, 3] <- sum(data_rand[data_p[i,1],] * data_rand[data_p[i,2],])/sqrt(sum(data_rand[data_p[i,1],]^2) * sum(data_rand[data_p[i, 2],]^2))
+          data_p[i, 3] <- sum(rel_data[data_p[i,1],] * rel_data[data_p[i,2],])/sqrt(sum(rel_data[data_p[i,1],]^2) * sum(rel_data[data_p[i, 2],]^2))
           }} else
       if(method == "czekanowski"){
         # Czekanowski
-        data_p <- cbind(t(combn(rownames(data_rand), 2)), 0)
+        data_p <- cbind(t(combn(rownames(rel_data), 2)), 0)
         for (i in 1:nrow(data_p)){
-          data_p[i, 3] <- 1 - 0.5 * sum(abs((data_rand[data_p[i, 1], ] - data_rand[data_p[i, 2], ])))
+          data_p[i, 3] <- 1 - 0.5 * sum(abs((rel_data[data_p[i, 1], ] - rel_data[data_p[i, 2], ])))
         }} else
       {return("Error: Please set method as pianka or czekanowski")}
       data_spp[,c(1,2)] <- data_p[,c(1,2)]
