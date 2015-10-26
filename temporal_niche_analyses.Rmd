@@ -44,11 +44,11 @@ The data used in our analyses come from the long-term monitoring trapping of the
 2. Creating cast_"site" datasets as input for niche overlap analyses
     => cast_site function
 3. Run of observation datasets
-    => RA4_nicheoverlap function (!!! HIER MÜSSEN WIR DEN RA4 noch einmal umgehen !!!)
+    => RA4_nicheoverlap function, ra4 = FALSE
 4. Extracting the species with overlap probability of at least 0.75 in at least one spp pair
     => ? function
 5. Run of randomized datasets, only with 0.75prob species
-    => RA4_nicheoverlap function
+    => RA4_nicheoverlap function, ra4 = TRUE
 6. Merge results, if needed
     => readin function
 7. t-test
@@ -66,12 +66,11 @@ In here, we set the working directory, which one might have to adapt or change i
 # Setting the working directory
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 
-###### Installing packages (if needed: delete the hashtag in front of the code!) ######
-# install.packages("lubridate")
-# install.packages("ggplot2")
-# install.packages("reshape")
-# install.packages("EcoSimR")
-#######################################################################################
+# Installing packages if needed
+if("lubridate" %in% rownames(installed.packages())  == FALSE) {install.packages("lubridate")}
+if("ggplot2" %in% rownames(installed.packages())    == FALSE) {install.packages("ggplot2")}
+if("reshape" %in% rownames(installed.packages())    == FALSE) {install.packages("reshape")}
+if("EcoSimR" %in% rownames(installed.packages())    == FALSE) {install.packages("EcoSimR")}
 
 # Loading packages
 library(lubridate)
@@ -514,7 +513,7 @@ choose(nrow(cast_PP_75),2)/choose(nrow(cast_PP),2)*100 #percentage of combinatio
 ```
 
 ```{r}
-#mod of ra4 function {EcosimR} to avoid error msg
+#modification of ra4 function {EcosimR} to avoid error msg
 ra4_mod <- function(speciesData) {
     NonZeroRowShuffle <- function(vec = runif(10)) {
         nonzero <- which(vec > 0)
