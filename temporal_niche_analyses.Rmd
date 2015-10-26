@@ -347,41 +347,29 @@ Als Funktion:
 # Gdata ==> cast_"site"
 # package "reshape" is needed
 cast_site <- function(data, site = "missing"){
-  if (site[1] == "PP"){
+  if (site == "PP"){
     #subset, which only contains data from PP
-    data_PP <- subset(data, site == "PP")
-    #transforming the data into cast-format
-    cast_PP <- cast(aggregate(data_PP$value,
-                       by = list(data_PP$spp, data_PP$date),
+    data_sub <- subset(data, site == "PP")}
+  else
+    if (site == "EBN"){
+      #subset, which only contains data from EBN
+      data_sub <- subset(data, site == "EBN")}
+    else {return("Error: Please set site to EBN or PP")}
+  #transforming the data into cast-format
+  cast <- cast(aggregate(data_sub$value,
+                       by = list(data_sub$spp, data_sub$date),
                        FUN = "sum",
                        na.rm = T),
                   Group.1 ~ Group.2,
                   value = "x",
                   "sum")
     #changing the species to front column and deleting the species column
-    rownames(cast_PP) <- cast_PP$Group.1
-    cast_PP <- cast_PP[,-1]
-    #return cast_site #### DOES NOT WORK YET
-    return(data.frame(cast_PP))
-    } else
-      if (site[1] == "EBN"){
-        #subset, which only contains data from EBN
-        data_EBN <- subset(data, site == "EBN")
-        #transforming the data into cast-format
-        cast_EBN <- cast(aggregate(data_EBN$value,
-                                  by = list(data_EBN$spp, data_EBN$date),
-                                  FUN = "sum",
-                                  na.rm = T),
-                        Group.1 ~ Group.2,
-                        value = "x",
-                        "sum")
-        #changing the species to front column and deleting the species column
-        rownames(cast_EBN) <- cast_EBN$Group.1
-        cast_EBN <- cast_EBN[,-1]
-        #return cast_site  #### DOES NOT WORK YET
-        return(data.frame(cast_EBN))
-        } else
-          {return("Error: Please set site to EBN or PP")}
+    rownames(cast) <- cast$Group.1
+    cast <- cast[,-1]
+    if (site == "PP")
+      {cast_PP <- as.data.frame(cast)}
+    else
+    {cast_EBN <- as.data.frame(cast)}
 }
 ```
 
@@ -524,8 +512,7 @@ choose(nrow(cast_PP_75),2)/choose(nrow(cast_PP),2)*100 #percentage of combinatio
 
 ```{r}
 #mod of ra4 function {EcosimR} to avoid error msg
-ra4_mod <- function(speciesData) 
-{
+ra4_mod <- function(speciesData) {
     NonZeroRowShuffle <- function(vec = runif(10)) {
         nonzero <- which(vec > 0)
         shuffledvec <- vec
@@ -551,27 +538,27 @@ RA4_nicheoverlap <- function(data, method = "missing", iterations = 1, site = "m
       rel_data <- data/rowSums(data)
       #ra4 randomization
       data_rand <- ra4_mod(rel_data)
-      if(method[1] == "pianka"){
+      if(method == "pianka"){
         # Pianka
         data_p <- cbind(t(combn(rownames(data_rand), 2)), 0)
         for (i in 1:nrow(data_p)){
           data_p[i, 3] <- sum(data_rand[data_p[i,1],] * data_rand[data_p[i,2],])/sqrt(sum(data_rand[data_p[i,1],]^2) * sum(data_rand[data_p[i, 2],]^2))
           }} else
-      {if(method[1] == "czekanowski"){
+      if(method == "czekanowski"){
         # Czekanowski
         data_p <- cbind(t(combn(rownames(data_rand), 2)), 0)
         for (i in 1:nrow(data_p)){
           data_p[i, 3] <- 1 - 0.5 * sum(abs((data_rand[data_p[i, 1], ] - data_rand[data_p[i, 2], ])))
         }} else
       {return("Error: Please set method as pianka or czekanowski")}
-      }
       data_spp[,c(1,2)] <- data_p[,c(1,2)]
       data_spp <- data.frame(data_spp, data_p[,3])
       if (ncol(data_spp)-2 == iterations[1]){break}
     }
-    if("pianka" %in% list.files()|"czekanowski" %in% list.files()){}
+    if ("pianka" %in% list.files()|"czekanowski" %in% list.files()){}
+    else
     {dir_list <- c("pianka", "czekanowski", "pianka/EBN", "pianka/PP", "czekanowski/EBN", "czekanowski/PP")
-    for(i in dir_list){dir.create(i)}
+      for(i in dir_list){dir.create(i)}
     }
     colnames(data_spp) <- c("Spp1", "Spp2", (paste("RA4prob", 1:(ncol(data_spp)-2), sep = "_")))
     write.table(data_spp,
@@ -580,9 +567,9 @@ RA4_nicheoverlap <- function(data, method = "missing", iterations = 1, site = "m
                 sep = "\t",
                 row.names = F)
     return(data_spp)
-    }
-  {return("Error: Please set site to EBN or PP")}
-  }
+    } else
+      {return("Error: Please set site to EBN or PP")}
+}
 ```
 
 
