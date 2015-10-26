@@ -444,6 +444,47 @@ PP_C <- read.table("Temporal_niche_overlap_probabilities_PP_Czekanowski.txt",
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 ```
 
+```{r}
+# Gdata ==> cast_"site"
+# package "reshape" is needed
+cast_site <- function(data, site = "missing"){
+  if (site[1] == "PP"){
+    #subset, which only contains data from PP
+    data_PP <- subset(data, site == "PP")
+    #transforming the data into cast-format
+    cast_PP <- cast(aggregate(data_PP$value,
+                       by = list(data_PP$spp, data_PP$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+    #changing the species to front column and deleting the species column
+    rownames(cast_PP) <- cast_PP$Group.1
+    cast_PP <- cast_PP[,-1]
+    #return cast_site #### DOES NOT WORK YET
+    return(data.frame(cast_PP))
+    } else
+      if (site[1] == "EBN"){
+        #subset, which only contains data from EBN
+        data_EBN <- subset(data, site == "EBN")
+        #transforming the data into cast-format
+        cast_EBN <- cast(aggregate(data_EBN$value,
+                                  by = list(data_EBN$spp, data_EBN$date),
+                                  FUN = "sum",
+                                  na.rm = T),
+                        Group.1 ~ Group.2,
+                        value = "x",
+                        "sum")
+        #changing the species to front column and deleting the species column
+        rownames(cast_EBN) <- cast_EBN$Group.1
+        cast_EBN <- cast_EBN[,-1]
+        #return cast_site  #### DOES NOT WORK YET
+        return(data.frame(cast_EBN))
+        } else
+          {return("Error: Please set site to EBN or PP")}
+}
+```
 
 
 ```{r}
@@ -484,8 +525,8 @@ ra4_mod <- function(speciesData)
 }
 
 #ra4 randomization
-RA4_nicheoverlap <- function(data, method = "missing", iterations = 1, site = "missing")
-  {if(site %in% c("PP", "EBN")){
+RA4_nicheoverlap <- function(data, method = "missing", iterations = 1, site = "missing"){
+  if(site %in% c("PP", "EBN")){
     data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(data), 2))),
                            Spp2 = factor(rep(1, choose(nrow(data), 2))))
     repeat{
@@ -498,13 +539,13 @@ RA4_nicheoverlap <- function(data, method = "missing", iterations = 1, site = "m
         data_p <- cbind(t(combn(rownames(data_rand), 2)), 0)
         for (i in 1:nrow(data_p)){
           data_p[i, 3] <- sum(data_rand[data_p[i,1],] * data_rand[data_p[i,2],])/sqrt(sum(data_rand[data_p[i,1],]^2) * sum(data_rand[data_p[i, 2],]^2))
-          }}
+          }} else
       {if(method[1] == "czekanowski"){
         # Czekanowski
         data_p <- cbind(t(combn(rownames(data_rand), 2)), 0)
         for (i in 1:nrow(data_p)){
           data_p[i, 3] <- 1 - 0.5 * sum(abs((data_rand[data_p[i, 1], ] - data_rand[data_p[i, 2], ])))
-        }}
+        }} else
       {return("Error: Please set method as pianka or czekanowski")}
       }
       data_spp[,c(1,2)] <- data_p[,c(1,2)]
