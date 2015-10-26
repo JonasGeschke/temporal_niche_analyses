@@ -367,9 +367,11 @@ cast_site <- function(data, site = "missing"){
     rownames(cast) <- cast$Group.1
     cast <- cast[,-1]
     if (site == "PP")
-      {cast_PP <- as.data.frame(cast)}
+    {cast_PP <- data.frame(cast)
+    return(cast_PP)}
     else
-    {cast_EBN <- as.data.frame(cast)}
+    {cast_EBN <- data.frame(cast)
+      return(cast_EBN)}
 }
 ```
 
