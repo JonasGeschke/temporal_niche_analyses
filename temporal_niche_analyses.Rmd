@@ -38,6 +38,23 @@ The data used in our analyses come from the long-term monitoring trapping of the
 
 
 
+# Steps within statistical analysis
+
+1. Revising original data and re-organizing it for easier processing
+2. Creating cast_"site" datasets as input for niche overlap analyses
+    => cast_site function
+3. Run of observation datasets
+    => RA4_nicheoverlap function (!!! HIER MÜSSEN WIR DEN RA4 noch einmal umgehen !!!)
+4. Extracting the species with overlap probability of at least 0.75 in at least one spp pair
+    => ? function
+5. Run of randomized datasets, only with 0.75prob species
+    => RA4_nicheoverlap function
+6. Merge results, if needed
+    => readin function
+7. t-test
+
+
+
 - - - - - - - - - -
 # Script
 
@@ -263,16 +280,6 @@ overview_plot
 
 ## Transforming the data for further analyses
 
-Creating subset datasets for each site, `Gdata_EBN` and `Gdata_PP`.
-
-```{r, results='hide'}
-# Creating a subset, which only contains data from EBN
-Gdata_EBN <- subset(Gdata, site == "EBN")
-Gdata_PP <- subset(Gdata, site == "PP")
-```
-
-
-
 ########### BRAUCHEN WIR DIES NOCH ?###########
 Subsetting function bases
 
@@ -295,6 +302,9 @@ Transforming the datasets into the Pianka and Czekanowski input format.
 
 `cast_EBN`
 ```{r, results='hide'}
+# Creating a subset, which only contains data from EBN
+Gdata_EBN <- subset(Gdata, site == "EBN")
+
 # Creating a table in which we have relative values lateron
 # For now using the Gdata_EBN dataset only
 # Here, the package "reshape" is needed
@@ -313,6 +323,9 @@ cast_EBN <- cast_EBN[,-1]
 
 `cast_PP`
 ```{r, results='hide'}
+# Creating a subset, which only contains data from PP
+Gdata_PP <- subset(Gdata, site == "PP")
+
 # Creating a table in which we have relative values lateron
 # For now using the Gdata_PP dataset only
 # Here, the package "reshape" is needed
@@ -327,6 +340,49 @@ cast_PP <- cast(aggregate(Gdata_PP$value,
 # Changing the species to front column and deleting the species column
 rownames(cast_PP) <- cast_PP$Group.1
 cast_PP <- cast_PP[,-1]
+```
+
+Als Funktion:
+```{r}
+# Gdata ==> cast_"site"
+# package "reshape" is needed
+cast_site <- function(data, site = "missing"){
+  if (site[1] == "PP"){
+    #subset, which only contains data from PP
+    data_PP <- subset(data, site == "PP")
+    #transforming the data into cast-format
+    cast_PP <- cast(aggregate(data_PP$value,
+                       by = list(data_PP$spp, data_PP$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+    #changing the species to front column and deleting the species column
+    rownames(cast_PP) <- cast_PP$Group.1
+    cast_PP <- cast_PP[,-1]
+    #return cast_site #### DOES NOT WORK YET
+    return(data.frame(cast_PP))
+    } else
+      if (site[1] == "EBN"){
+        #subset, which only contains data from EBN
+        data_EBN <- subset(data, site == "EBN")
+        #transforming the data into cast-format
+        cast_EBN <- cast(aggregate(data_EBN$value,
+                                  by = list(data_EBN$spp, data_EBN$date),
+                                  FUN = "sum",
+                                  na.rm = T),
+                        Group.1 ~ Group.2,
+                        value = "x",
+                        "sum")
+        #changing the species to front column and deleting the species column
+        rownames(cast_EBN) <- cast_EBN$Group.1
+        cast_EBN <- cast_EBN[,-1]
+        #return cast_site  #### DOES NOT WORK YET
+        return(data.frame(cast_EBN))
+        } else
+          {return("Error: Please set site to EBN or PP")}
+}
 ```
 
 
@@ -444,47 +500,8 @@ PP_C <- read.table("Temporal_niche_overlap_probabilities_PP_Czekanowski.txt",
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 ```
 
-```{r}
-# Gdata ==> cast_"site"
-# package "reshape" is needed
-cast_site <- function(data, site = "missing"){
-  if (site[1] == "PP"){
-    #subset, which only contains data from PP
-    data_PP <- subset(data, site == "PP")
-    #transforming the data into cast-format
-    cast_PP <- cast(aggregate(data_PP$value,
-                       by = list(data_PP$spp, data_PP$date),
-                       FUN = "sum",
-                       na.rm = T),
-                  Group.1 ~ Group.2,
-                  value = "x",
-                  "sum")
-    #changing the species to front column and deleting the species column
-    rownames(cast_PP) <- cast_PP$Group.1
-    cast_PP <- cast_PP[,-1]
-    #return cast_site #### DOES NOT WORK YET
-    return(data.frame(cast_PP))
-    } else
-      if (site[1] == "EBN"){
-        #subset, which only contains data from EBN
-        data_EBN <- subset(data, site == "EBN")
-        #transforming the data into cast-format
-        cast_EBN <- cast(aggregate(data_EBN$value,
-                                  by = list(data_EBN$spp, data_EBN$date),
-                                  FUN = "sum",
-                                  na.rm = T),
-                        Group.1 ~ Group.2,
-                        value = "x",
-                        "sum")
-        #changing the species to front column and deleting the species column
-        rownames(cast_EBN) <- cast_EBN$Group.1
-        cast_EBN <- cast_EBN[,-1]
-        #return cast_site  #### DOES NOT WORK YET
-        return(data.frame(cast_EBN))
-        } else
-          {return("Error: Please set site to EBN or PP")}
-}
-```
+
+
 
 
 ```{r}
