@@ -530,8 +530,24 @@ ra4_mod <- function(speciesData) {
     return(RM)
 }
 
+#write_txt function
+write_txt <- function(data_spp){
+  if ("pianka" %in% list.files()|"czekanowski" %in% list.files())
+    {} else
+    {dir_list <- c("pianka", "czekanowski", "pianka/EBN", "pianka/PP", "czekanowski/EBN", "czekanowski/PP")
+      for(i in dir_list){dir.create(i)}
+    }
+    colnames(data_spp) <- c("Spp1", "Spp2", (paste("RA4prob", 1:(ncol(data_spp)-2), sep = "_")))
+    write.table(data_spp,
+                file = paste("~/", method, "/", site, "/", method,"_", site,"_", Sys.Date(), "_",
+                             format(Sys.time(), "%H-%M"), ".txt", sep=""),
+                sep = "\t",
+                row.names = F)
+    return(data_spp)
+}
+
 #ra4 randomization
-nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, site = "missing"){
+nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, txt = FALSE, site = "missing"){
   if(site %in% c("PP", "EBN")){
     data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(data), 2))),
                            Spp2 = factor(rep(1, choose(nrow(data), 2))))
@@ -560,17 +576,11 @@ nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, s
       data_spp <- data.frame(data_spp, data_p[,3])
       if (ncol(data_spp)-2 == iterations[1]){break}
     }
-    if ("pianka" %in% list.files()|"czekanowski" %in% list.files()){}
+    # write_txt cut here
+    if(txt == FALSE)
+    {nicheoverlap_result <- data_spp}
     else
-    {dir_list <- c("pianka", "czekanowski", "pianka/EBN", "pianka/PP", "czekanowski/EBN", "czekanowski/PP")
-      for(i in dir_list){dir.create(i)}
-    }
-    colnames(data_spp) <- c("Spp1", "Spp2", (paste("RA4prob", 1:(ncol(data_spp)-2), sep = "_")))
-    write.table(data_spp,
-                file = paste("~/", method, "/", site, "/", method,"_", site,"_", Sys.Date(), "_",
-                             format(Sys.time(), "%H-%M"), ".txt", sep=""),
-                sep = "\t",
-                row.names = F)
+    {write_txt(data_spp)}
     return(data_spp)
     } else
       {return("Error: Please set site to EBN or PP")}
