@@ -525,9 +525,11 @@ spppairs75prob <- function(data, site = "missing"){
     sub_data_2 <- data$Spp2[data$TempOverlapProb>=0.75]
     #create one dataset with all the species just extracted
     if(site == "PP")
-      {cast_PP_75 <- cast_PP[rownames(cast_PP) %in% sub_data_1 | rownames(cast_PP) %in% sub_data_2,]}
+    {cast_PP_75 <- cast_PP[rownames(cast_PP) %in% sub_data_1 | rownames(cast_PP) %in% sub_data_2,]
+      return(cast_PP_75)}
     else
-      {cast_EBN_75 <- cast_EBN[rownames(cast_EBN) %in% sub_data_1 | rownames(cast_EBN) %in% sub_data_2,]}}
+    {cast_EBN_75 <- cast_EBN[rownames(cast_EBN) %in% sub_data_1 | rownames(cast_EBN) %in% sub_data_2,]
+      return(cast_EBN_75)}}
   else
       {return("Error: Please set site to EBN or PP")}
 }  
@@ -553,19 +555,19 @@ ra4_mod <- function(speciesData) {
 }
 
 #write_txt function
-organized_txt <- function(data){
+organized_txt <- function(data_spp){
   if ("pianka" %in% list.files()|"czekanowski" %in% list.files())
-    {} else
+    {}
+  else
     {dir_list <- c("pianka", "czekanowski", "pianka/EBN", "pianka/PP", "czekanowski/EBN", "czekanowski/PP")
-      for(i in dir_list){dir.create(i)}
-    }
-    colnames(data) <- c("Spp1", "Spp2", (paste("RA4prob", 1:(ncol(data)-2), sep = "_")))
-    write.table(data,
+      for(i in dir_list){dir.create(i)}}
+    colnames(data_spp) <- c("Spp1", "Spp2", (paste("RA4prob", 1:(ncol(data_spp)-2), sep = "_")))
+    write.table(data_spp,
                 file = paste("~/", method, "/", site, "/", method,"_", site,"_", Sys.Date(), "_",
                              format(Sys.time(), "%H-%M"), ".txt", sep=""),
                 sep = "\t",
                 row.names = F)
-    return(data)
+    return(data_spp)
 }
 
 #ra4 randomization
