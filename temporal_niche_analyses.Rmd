@@ -516,26 +516,28 @@ choose(nrow(cast_PP_75),2)/choose(nrow(cast_PP),2)*100 #percentage of combinatio
 
 As function:
 ```{r}
-# get the species of the species pairs that show >= 0.75 overlap in the observations datasets
-cast_site_75 <- function(data, site = "missing"){
+# get the species of the species pairs that show >=X prob overlap in the observations datasets
+cast_site_prob <- function(data, prob = 0.50, site = "missing"){
   if(site %in% c("PP", "EBN")){
-    #extracting the species from spp pairs prob >=0.75 into single datasets
-    sub_data_1 <- data$Spp1[data$TempOverlapProb>=0.75]
-    sub_data_2 <- data$Spp2[data$TempOverlapProb>=0.75]
+    #extracting the species from spp pairs prob >=X prob into single datasets
+    sub_data_1 <- data$Spp1[data$TempOverlapProb >= prob]
+    sub_data_2 <- data$Spp2[data$TempOverlapProb >= prob]
     #create one dataset with all the species just extracted
     if(site == "PP")
-    {cast_75 <- cast_PP[rownames(cast_PP) %in% sub_data_1 | rownames(cast_PP) %in% sub_data_2,]
-      return(cast_75)}
+    {cast_prob <- cast_PP[rownames(cast_PP) %in% sub_data_1 | rownames(cast_PP) %in% sub_data_2,]
+      return(cast_prob)}
     else
-    {cast_75 <- cast_EBN[rownames(cast_EBN) %in% sub_data_1 | rownames(cast_EBN) %in% sub_data_2,]
-      return(cast_75)}}
+    {cast_prob <- cast_EBN[rownames(cast_EBN) %in% sub_data_1 | rownames(cast_EBN) %in% sub_data_2,]
+      return(cast_prob)}}
   else
       {return("Error: Please set site to EBN or PP")}
 }
 
 # input data is the observation overlap result dataset of the particular site
-cast_EBN_75 <- cast_site_75(DATA, site = "EBN")
-cast_PP_75 <- cast_site_75(DATA, site = "PP")
+cast_EBN_prob <- cast_site_prob(EBN_P, prob = 0.75, site = "EBN")
+cast_EBN_prob <- cast_site_prob(EBN_C, prob = X, site = "EBN")
+cast_PP_prob <- cast_site_prob(PP_P, prob = X, site = "PP")
+cast_PP_prob <- cast_site_prob(PP_C, prob = X, site = "PP")
 ```
 
 
@@ -558,7 +560,7 @@ ra4_mod <- function(speciesData) {
 }
 
 #write_txt function
-organized_txt <- function(data_spp){
+organized_txt <- function(data_spp, method, site){
   if ("pianka" %in% list.files()|"czekanowski" %in% list.files())
     {}
   else
@@ -566,7 +568,7 @@ organized_txt <- function(data_spp){
       for(i in dir_list){dir.create(i)}}
     colnames(data_spp) <- c("Spp1", "Spp2", (paste("RA4prob", 1:(ncol(data_spp)-2), sep = "_")))
     write.table(data_spp,
-                file = paste("~/", method, "/", site, "/", method,"_", site,"_", Sys.Date(), "_",
+                file = paste(getwd(), "/", method, "/", site, "/", method,"_", site,"_", Sys.Date(), "_",
                              format(Sys.time(), "%H-%M"), ".txt", sep=""),
                 sep = "\t",
                 row.names = F)
@@ -610,10 +612,12 @@ nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, t
     if(txt == FALSE)
     {return(data_spp)}
     else
-    {organized_txt(data_spp)}
+    {organized_txt(data_spp, method = method, site = site)}
     } else
       {return("Error: Please set site to EBN or PP")}
 }
+
+nicheoverlap_EBN_p <- nicheoverlap(cast_EBN_prob, method = "pianka", ra4 = F, iterations = 10, txt = T, site = "EBN")
 ```
 
 
