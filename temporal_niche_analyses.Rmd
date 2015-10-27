@@ -366,13 +366,11 @@ cast_site <- function(data, site = "missing"){
     #changing the species to front column and deleting the species column
     rownames(cast) <- cast$Group.1
     cast <- cast[,-1]
-    if (site == "PP")
-    {cast_PP <- cast
-      return(cast_PP)}
-    else
-    {cast_EBN <- cast
-      return(cast_EBN)}
+    return(cast)
 }
+
+cast_EBN <- cast(Gdata, site = "EBN")
+cast_PP <- cast(Gdata, site = "PP")
 ```
 #    ifelse (site == "PP", (cast_PP <- data.frame(cast)), (cast_EBN <- data.frame(cast)))
 
@@ -519,21 +517,25 @@ choose(nrow(cast_PP_75),2)/choose(nrow(cast_PP),2)*100 #percentage of combinatio
 As function:
 ```{r}
 # get the species of the species pairs that show >= 0.75 overlap in the observations datasets
-spppairs75prob <- function(data, site = "missing"){
+cast_site_75 <- function(data, site = "missing"){
   if(site %in% c("PP", "EBN")){
     #extracting the species from spp pairs prob >=0.75 into single datasets
     sub_data_1 <- data$Spp1[data$TempOverlapProb>=0.75]
     sub_data_2 <- data$Spp2[data$TempOverlapProb>=0.75]
     #create one dataset with all the species just extracted
     if(site == "PP")
-    {cast_PP_75 <- cast_PP[rownames(cast_PP) %in% sub_data_1 | rownames(cast_PP) %in% sub_data_2,]
-      return(cast_PP_75)}
+    {cast_75 <- cast_PP[rownames(cast_PP) %in% sub_data_1 | rownames(cast_PP) %in% sub_data_2,]
+      return(cast_75)}
     else
-    {cast_EBN_75 <- cast_EBN[rownames(cast_EBN) %in% sub_data_1 | rownames(cast_EBN) %in% sub_data_2,]
-      return(cast_EBN_75)}}
+    {cast_75 <- cast_EBN[rownames(cast_EBN) %in% sub_data_1 | rownames(cast_EBN) %in% sub_data_2,]
+      return(cast_75)}}
   else
       {return("Error: Please set site to EBN or PP")}
 }
+
+# input data is the observation overlap result dataset of the particular site
+cast_EBN_75 <- cast_site(DATA, site = "EBN")
+cast_PP_75 <- cast_site(DATA, site = "PP")
 ```
 
 
@@ -606,10 +608,9 @@ nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, t
     }
     # write txt cut here
     if(txt == FALSE)
-    {nicheoverlap_result <- data_spp}
+    {return(data_spp)}
     else
     {organized_txt(data_spp)}
-    return(data_spp)
     } else
       {return("Error: Please set site to EBN or PP")}
 }
