@@ -578,7 +578,7 @@ nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, t
     }
     # write_txt cut here
     if(txt == FALSE)
-    {nicheoverlap_result <- data_spp}
+    {nicheoverlap_result <- data.frame(data_spp)}
     else
     {write_txt(data_spp)}
     return(data_spp)
