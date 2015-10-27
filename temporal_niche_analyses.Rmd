@@ -353,7 +353,8 @@ cast_site <- function(data, site = "missing"){
     if (site == "EBN"){
       #subset, which only contains data from EBN
       data_sub <- subset(data, site == "EBN")}
-    else {return("Error: Please set site to EBN or PP")}
+    else
+      {return("Error: Please set site to EBN or PP")}
   #transforming the data into cast-format
   cast <- cast(aggregate(data_sub$value,
                        by = list(data_sub$spp, data_sub$date),
@@ -367,10 +368,10 @@ cast_site <- function(data, site = "missing"){
     cast <- cast[,-1]
     if (site == "PP")
     {cast_PP <- cast
-    return(cast_PP)}
+      return(cast_PP)}
     else
     {cast_EBN <- cast
-    return(cast_EBN)}
+      return(cast_EBN)}
 }
 ```
 #    ifelse (site == "PP", (cast_PP <- data.frame(cast)), (cast_EBN <- data.frame(cast)))
@@ -532,7 +533,7 @@ spppairs75prob <- function(data, site = "missing"){
       return(cast_EBN_75)}}
   else
       {return("Error: Please set site to EBN or PP")}
-}  
+}
 ```
 
 
