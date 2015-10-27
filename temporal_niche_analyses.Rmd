@@ -44,11 +44,11 @@ The data used in our analyses come from the long-term monitoring trapping of the
 2. Creating cast_"site" datasets as input for niche overlap analyses
     => cast_site function, input: Gdata
 3. Run of observation datasets
-    => RA4_nicheoverlap function, ra4 = FALSE, input: results of 2
+    => RA4_nicheoverlap function, ra4 = FALSE, txt = FALSE, input: results of 2
 4. Extracting the species with overlap probability of at least 0.75 in at least one spp pair
     => spppairs75prob function, input: reults of 3
 5. Run of randomized datasets, only with 0.75prob species
-    => RA4_nicheoverlap function, ra4 = TRUE, input: results of 4
+    => RA4_nicheoverlap function, ra4 = TRUE, txt = TRUE, input: results of 4
 6. Merge results, if needed
     => readin function, input: results of 5
 7. t-test
@@ -555,6 +555,7 @@ ra4_mod <- function(speciesData) {
     data_solo_obs <- speciesData[rowSums(speciesData != 0) == 1,]
     RM <- t(apply(data_mult_obs, 1, NonZeroRowShuffle))
     rownames(RM) <- rownames(data_mult_obs)
+    colnames(RM) <- colnames(data_solo_obs)
     RM <- rbind(RM, data_solo_obs)
     return(RM)
 }
