@@ -42,15 +42,15 @@ The data used in our analyses come from the long-term monitoring trapping of the
 
 1. Revising original data and re-organizing it for easier processing
 2. Creating cast_"site" datasets as input for niche overlap analyses
-    => cast_site function
+    => cast_site function, input: Gdata
 3. Run of observation datasets
-    => RA4_nicheoverlap function, ra4 = FALSE
+    => RA4_nicheoverlap function, ra4 = FALSE, input: results of 2
 4. Extracting the species with overlap probability of at least 0.75 in at least one spp pair
-    => ? function
+    => spppairs75prob function, input: reults of 3
 5. Run of randomized datasets, only with 0.75prob species
-    => RA4_nicheoverlap function, ra4 = TRUE
+    => RA4_nicheoverlap function, ra4 = TRUE, input: results of 4
 6. Merge results, if needed
-    => readin function
+    => readin function, input: results of 5
 7. t-test
 
 
@@ -341,7 +341,7 @@ rownames(cast_PP) <- cast_PP$Group.1
 cast_PP <- cast_PP[,-1]
 ```
 
-Als Funktion:
+As function:
 ```{r}
 # Gdata ==> cast_"site"
 # package "reshape" is needed
@@ -408,32 +408,21 @@ plot(EBN_P[,3], EBN_C[,3],
      ylab = "Czekanowski",
      pch = 3)
   mtext("(Each cross symbolizes one pair of species)")
-```
-
-```{r, results='hide'}
+  
 # Setting target folder (Dropbox) as working directory
 setwd("~/Dropbox/Co-occurrence/Results/Tables")
 
 # Save results as tables
-write.table(EBN_P, file = "Temporal_niche_overlap_probabilities_EBN_Pianka.txt",
+write.table(EBN_P, file = "nicheoverlap_observations_EBN_Pianka.txt",
             sep = "\t",
             row.names = F)
-write.table(EBN_C, file = "Temporal_niche_overlap_probabilities_EBN_Czekanowski.txt",
+write.table(EBN_C, file = "nicheoverlap_observations_EBN_Czekanowski.txt",
             sep = "\t",
             row.names = F)
-
-# Re-load tables
-EBN_P <- read.table("Temporal_niche_overlap_probabilities_EBN_Pianka.txt",
-                   header = T,
-                   sep = "\t")
-EBN_C <- read.table("Temporal_niche_overlap_probabilities_EBN_Czekanowski.txt",
-                   header = T,
-                   sep = "\t")
 
 # Re-setting to process working directory
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 ```
-
 
 For PP.
 ```{r, results='hide'}
@@ -464,25 +453,39 @@ plot(PP_P[,3], PP_C[,3],
      ylab = "Czekanowski",
      pch = 3)
   mtext("(Each cross symbolizes one pair of species)")
-```
-
-```{r, results='hide'}
+  
 # Setting target folder (Dropbox) as working directory
 setwd("~/Dropbox/Co-occurrence/Results/Tables")
 
 # Save results as tables
-write.table(PP_P, file = "Temporal_niche_overlap_probabilities_PP_Pianka.txt",
+write.table(PP_P, file = "nicheoverlap_observations_PP_Pianka.txt",
             sep = "\t",
             row.names = F)
-write.table(PP_C, file = "Temporal_niche_overlap_probabilities_PP_Czekanowski.txt",
+write.table(PP_C, file = "nicheoverlap_observations_PP_Czekanowski.txt",
             sep = "\t",
             row.names = F)
 
+# Re-setting to process working directory
+setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
+```
+
+
+Loading the results from original (observations) datasets:
+```{r, results='hide'}
+# Setting target folder (Dropbox) as working directory
+setwd("~/Dropbox/Co-occurrence/Results/Tables")
+
 # Re-load tables
-PP_P <- read.table("Temporal_niche_overlap_probabilities_PP_Pianka.txt",
+EBN_P <- read.table("nicheoverlap_observations_EBN_Pianka.txt",
                    header = T,
                    sep = "\t")
-PP_C <- read.table("Temporal_niche_overlap_probabilities_PP_Czekanowski.txt",
+EBN_C <- read.table("nicheoverlap_observations_EBN_Czekanowski.txt",
+                   header = T,
+                   sep = "\t")
+PP_P <- read.table("nicheoverlap_observations_PP_Pianka.txt",
+                   header = T,
+                   sep = "\t")
+PP_C <- read.table("nicheoverlap_observations_PP_Czekanowski.txt",
                    header = T,
                    sep = "\t")
 
@@ -495,7 +498,7 @@ setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 
 
 ```{r}
-# get the species of the species pairs that show > 0.75 overlap indicated by pianka index
+# get the species of the species pairs that show >= 0.75 overlap indicated by pianka index
 #quant_PP_P <- quantile(PP_P$TempOverlapProb, 0.995)
 spec5_PP_P1 <- PP_P$Spp1[PP_P$TempOverlapProb>=0.75]
 spec5_PP_P2 <- PP_P$Spp2[PP_P$TempOverlapProb>=0.75]
@@ -511,6 +514,25 @@ nrow(cast_PP_75)
 nrow(cast_PP_75)/nrow(cast_PP)*100 #percentage of species remaining
 choose(nrow(cast_PP_75),2)/choose(nrow(cast_PP),2)*100 #percentage of combinations remaining
 ```
+
+As function:
+```{r}
+# get the species of the species pairs that show >= 0.75 overlap in the observations datasets
+spppairs75prob <- function(data, site = "missing"){
+  if(site %in% c("PP", "EBN")){
+    #extracting the species from spp pairs prob >=0.75 into single datasets
+    sub_data_1 <- data$Spp1[data$TempOverlapProb>=0.75]
+    sub_data_2 <- data$Spp2[data$TempOverlapProb>=0.75]
+    #create one dataset with all the species just extracted
+    if(site == "PP")
+      {cast_PP_75 <- cast_PP[rownames(cast_PP) %in% sub_data_1 | rownames(cast_PP) %in% sub_data_2,]}
+    else
+      {cast_EBN_75 <- cast_EBN[rownames(cast_EBN) %in% sub_data_1 | rownames(cast_EBN) %in% sub_data_2,]}}
+  else
+      {return("Error: Please set site to EBN or PP")}
+}  
+```
+
 
 ```{r}
 #modification of ra4 function {EcosimR} to avoid error msg
