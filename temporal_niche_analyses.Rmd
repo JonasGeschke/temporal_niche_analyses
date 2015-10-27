@@ -369,8 +369,8 @@ cast_site <- function(data, site = "missing"){
     return(cast)
 }
 
-cast_EBN <- cast(Gdata, site = "EBN")
-cast_PP <- cast(Gdata, site = "PP")
+cast_EBN <- cast_site(Gdata, site = "EBN")
+cast_PP <- cast_site(Gdata, site = "PP")
 ```
 #    ifelse (site == "PP", (cast_PP <- data.frame(cast)), (cast_EBN <- data.frame(cast)))
 
@@ -534,8 +534,8 @@ cast_site_75 <- function(data, site = "missing"){
 }
 
 # input data is the observation overlap result dataset of the particular site
-cast_EBN_75 <- cast_site(DATA, site = "EBN")
-cast_PP_75 <- cast_site(DATA, site = "PP")
+cast_EBN_75 <- cast_site_75(DATA, site = "EBN")
+cast_PP_75 <- cast_site_75(DATA, site = "PP")
 ```
 
 
