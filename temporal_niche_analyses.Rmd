@@ -652,6 +652,11 @@ library(pwr)
 #package pdf: https://cran.r-project.org/web/packages/pwr/pwr.pdf
 ```
 
+```{r}
+#t-test
+
+```
+
 
 - - - - - - - - - -
 # Results
