@@ -30,8 +30,10 @@ The main analysis approach comes from the paper "Temporal Overlap and Co-Occurre
 3. Pianka and Czekanowski => only indices, so edit of the background formular that it fits our needs => WORKS YES
 4. ROSARIO: works with looping time periods (one year, one day) => we dont have proper data => WORKS NO
 5. RA3: null-model approach, which randomized also the null values => transforms our data into pseudo-data => WORKS NO
-6. RA4: null-model apporach, which fixes null values and randomizes the others => WORKS YES ?
+6. RA4: null-model apporach, which fixes null values and randomizes the others => WORKS YES
 7. run XXX RA4 randomized datasheets for Pianka/Czekanowski analysis as null-model approach of our temporal overlap apporach
+8. run power-test on how many randomized iterations we actually need
+9. t-test
 
 
 The data used in our analyses come from the long-term monitoring trapping of the Chair of Forest Zoology and Entomology, University of Freiburg, and was undertaken by several staff members and student assistants.
