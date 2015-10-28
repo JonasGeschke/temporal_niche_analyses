@@ -546,6 +546,15 @@ cast_PP_p_prob <- cast_site_prob(PP_p, prob = X, site = "PP")
 cast_PP_c_prob <- cast_site_prob(PP_c, prob = X, site = "PP")
 ```
 
+```{r}
+#compare the amount of species in the raw and the subsetted dataset
+nrow(cast_EBN)
+nrow(cast_EBN_p_prob0.5)
+nrow(cast_EBN_p_prob0.5)/nrow(cast_EBN)*100 #percentage of species remaining
+choose(nrow(cast_EBN_p_prob0.5),2)/choose(nrow(cast_EBN),2)*100 #percentage of combinations remaining
+```
+
+
 
 ```{r}
 #ra4 randomization
