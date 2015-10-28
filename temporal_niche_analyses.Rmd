@@ -73,12 +73,14 @@ if("lubridate" %in% rownames(installed.packages())  == FALSE) {install.packages(
 if("ggplot2" %in% rownames(installed.packages())    == FALSE) {install.packages("ggplot2")}
 if("reshape" %in% rownames(installed.packages())    == FALSE) {install.packages("reshape")}
 if("EcoSimR" %in% rownames(installed.packages())    == FALSE) {install.packages("EcoSimR")}
+if("pwr" %in% rownames(installed.packages())        == FALSE) {install.packages("pwr")}
 
 # Loading packages
 library(lubridate)
 library(ggplot2)
 library(reshape)
 library(EcoSimR)
+library(pwr)
 ```
 
 
@@ -175,6 +177,7 @@ Gdata <- cbind(Gdata, "monat" = format(as.Date(Gdata$date, "%d.%m.%Y"), "%B"))
 
 # Creating a column, in which for each day we define the day number within a year
 # Here, the package "lubridate" is needed
+library(lubridate)
 Gdata <- cbind(Gdata, "day_nr" = yday(as.Date(Gdata$date, "%d.%m.%Y")))
 
 # Sorting whole datatable by month
@@ -348,6 +351,8 @@ As function:
 # Gdata ==> cast_"site"
 # package "reshape" is needed
 cast_site <- function(data, site = "missing"){
+  if("reshape" %in% rownames(installed.packages()) == FALSE) {install.packages("reshape")}
+  library(reshape)
   if (site == "PP"){
     #subset, which only contains data from PP
     data_sub <- subset(data, site == "PP")}
@@ -374,7 +379,6 @@ cast_site <- function(data, site = "missing"){
 cast_EBN <- cast_site(Gdata, site = "EBN")
 cast_PP <- cast_site(Gdata, site = "PP")
 ```
-#    ifelse (site == "PP", (cast_PP <- data.frame(cast)), (cast_EBN <- data.frame(cast)))
 
 
 
@@ -477,16 +481,16 @@ Loading the results from original (observations) datasets:
 setwd("~/Dropbox/Co-occurrence/Results/Tables")
 
 # Re-load tables
-EBN_P <- read.table("nicheoverlap_observations_EBN_Pianka.txt",
+EBN_p <- read.table("nicheoverlap_observations_EBN_Pianka.txt",
                    header = T,
                    sep = "\t")
-EBN_C <- read.table("nicheoverlap_observations_EBN_Czekanowski.txt",
+EBN_c <- read.table("nicheoverlap_observations_EBN_Czekanowski.txt",
                    header = T,
                    sep = "\t")
-PP_P <- read.table("nicheoverlap_observations_PP_Pianka.txt",
+PP_p <- read.table("nicheoverlap_observations_PP_Pianka.txt",
                    header = T,
                    sep = "\t")
-PP_C <- read.table("nicheoverlap_observations_PP_Czekanowski.txt",
+PP_c <- read.table("nicheoverlap_observations_PP_Czekanowski.txt",
                    header = T,
                    sep = "\t")
 
@@ -536,14 +540,15 @@ cast_site_prob <- function(data, prob = 0.50, site = "missing"){
 }
 
 # input data is the observation overlap result dataset of the particular site
-cast_EBN_prob <- cast_site_prob(EBN_P, prob = 0.75, site = "EBN")
-cast_EBN_prob <- cast_site_prob(EBN_C, prob = X, site = "EBN")
-cast_PP_prob <- cast_site_prob(PP_P, prob = X, site = "PP")
-cast_PP_prob <- cast_site_prob(PP_C, prob = X, site = "PP")
+cast_EBN_p_prob0.5 <- cast_site_prob(EBN_p, prob = 0.5, site = "EBN")
+cast_EBN_c_prob0.5 <- cast_site_prob(EBN_c, prob = 0.5, site = "EBN")
+cast_PP_p_prob <- cast_site_prob(PP_p, prob = X, site = "PP")
+cast_PP_c_prob <- cast_site_prob(PP_c, prob = X, site = "PP")
 ```
 
 
 ```{r}
+#ra4 randomization
 #modification of ra4 function {EcosimR} to avoid error msg
 ra4_mod <- function(speciesData) {
     NonZeroRowShuffle <- function(vec = runif(10)) {
@@ -569,7 +574,7 @@ organized_txt <- function(data_spp, method, site){
   else
     {dir_list <- c("pianka", "czekanowski", "pianka/EBN", "pianka/PP", "czekanowski/EBN", "czekanowski/PP")
       for(i in dir_list){dir.create(i)}}
-    colnames(data_spp) <- c("Spp1", "Spp2", (paste("RA4prob", 1:(ncol(data_spp)-2), sep = "_")))
+    colnames(data_spp) <- c("Spp1", "Spp2", (paste("Prob", 1:(ncol(data_spp)-2), sep = "_")))
     write.table(data_spp,
                 file = paste(getwd(), "/", method, "/", site, "/", method,"_", site,"_", Sys.Date(), "_",
                              format(Sys.time(), "%H-%M"), ".txt", sep=""),
@@ -578,7 +583,7 @@ organized_txt <- function(data_spp, method, site){
     return(data_spp)
 }
 
-#ra4 randomization
+#temporal niche overlap analysis function
 nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, txt = FALSE, site = "missing"){
   if(site %in% c("PP", "EBN")){
     data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(data), 2))),
@@ -620,9 +625,8 @@ nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, t
       {return("Error: Please set site to EBN or PP")}
 }
 
-nicheoverlap_EBN_p <- nicheoverlap(cast_EBN_prob, method = "pianka", ra4 = F, iterations = 10, txt = T, site = "EBN")
+nicheoverlap_EBN_p <- nicheoverlap(cast_EBN_p_prob0.5, method = "pianka", ra4 = F, iterations = 10, txt = T, site = "EBN")
 ```
-
 
 ```{r}
 #read in the results
@@ -636,10 +640,16 @@ readin <- function(site, method){
     #cbind the readin data into the dataframe data
     data <- cbind(data, readin[,3:ncol(readin)])
   }
-  colnames(data) <- c("Spp1", "Spp2", (paste("RA4prob", 1:(ncol(data)-2), sep = "_")))
+  colnames(data) <- c("Spp1", "Spp2", (paste("Prob", 1:(ncol(data)-2), sep = "_")))
     return(data)
-  }
+}
+```
 
+```{r}
+#t-test power analysis
+if("pwr" %in% rownames(installed.packages()) == FALSE) {install.packages("pwr")}
+library(pwr)
+#package pdf: https://cran.r-project.org/web/packages/pwr/pwr.pdf
 ```
 
 
