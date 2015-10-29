@@ -542,8 +542,8 @@ cast_site_prob <- function(data, prob = 0.50, site = "missing"){
 # input data is the observation overlap result dataset of the particular site
 cast_EBN_p_prob0.5 <- cast_site_prob(EBN_p, prob = 0.5, site = "EBN")
 cast_EBN_c_prob0.5 <- cast_site_prob(EBN_c, prob = 0.5, site = "EBN")
-cast_PP_p_prob <- cast_site_prob(PP_p, prob = X, site = "PP")
-cast_PP_c_prob <- cast_site_prob(PP_c, prob = X, site = "PP")
+cast_PP_p_prob0.75 <- cast_site_prob(PP_p, prob = 0.75, site = "PP")
+cast_PP_c_prob0.75 <- cast_site_prob(PP_c, prob = 0.75, site = "PP")
 ```
 
 ```{r}
