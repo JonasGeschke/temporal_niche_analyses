@@ -444,8 +444,8 @@ plot(EBN_p[,3], EBN_c[,3],
   mtext("(Each cross symbolizes one pair of species)")
   #adding the subset datasets (>=0.5 prob) to the plot, subsetting code see below
   abline(h = 0.5, v = 0.5, lty = 3, col = "grey")
-  # EBN_p_cut0.5[,3], col = "red"
-  
+  points(EBN_p_cut0.5[,3], EBN_c_cut0.5[,3], pch = 20, col = "red")
+
 #adding the upper probabilities (>=0.5) as red crosses, as they are used for RA4 analyses
 #subsetting the data, so only >=0.5 probability species pairs are in the dataset
 EBN_p_cut0.5 <- subset(EBN_p, TempOverlapProb >= 0.5)
