@@ -15,7 +15,7 @@ classoption: a4paper
 # Introduction
 _This skript is the outcome of a selected topic within the MSc Environmental Scienes, Faculty of Environment and Natural Resources, University of Freiburg. The selected topic is supervised by Dr Tim Burzlaff._
 
-The script is about the analysis of monitoring data from both Costa Rica (locations: El Bosque Nuevo Butterfly Farm and the private home of P. Gloor, near San José) and Peru (location: Panguana). The main interest is about looking for existing temporal niche and community interactions within species of Arctiinae and Ithomiini species.
+The script is about the analysis of monitoring data from both Costa Rica (locations: El Bosque Nuevo Butterfly Farm and the private home of P. Gloor, near San José) and Peru (location: Panguana). The main interest is about looking for existing temporal niche and community interactions within species of Arctiinae and Ithomiini.
 
 
 
@@ -23,7 +23,7 @@ The script is about the analysis of monitoring data from both Costa Rica (locati
 # Methodology: Technical Thinking Process
 
 1. co-occurrence approach => not really good results, need to specify actual research question and thereby subsettings of the data => WORKS NO
-2. found paper (mentioned above) => niche overlap approach
+2. found paper (see below) => niche overlap approach
 
 The main analysis approach comes from the paper "Temporal Overlap and Co-Occurrence in a Guild of Sub-Tropical Tephritid Fruit Flies" by Lopes GN, Souza-Filho MF, Gotelli NJ, Lemos LJU, Godoy WAC and Zucchi RA (2015) in PLoS ONE 10(7): e0132124, [doi:10.1371/journal.pone.0132124](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0132124). We concentrate on their idea about the niche overlap analyses.
 
@@ -53,7 +53,8 @@ The data used in our analyses come from the long-term monitoring trapping of the
     => RA4_nicheoverlap function, ra4 = TRUE, txt = TRUE, input: results of 4
 6. Merge results, if needed
     => readin function, input: results of 5
-7. t-test
+7. Run of power analysis for t-test
+8. t-test
 
 
 
@@ -62,65 +63,52 @@ The data used in our analyses come from the long-term monitoring trapping of the
 
 ## Defining general settings
 
-In here, we set the working directory, which one might have to adapt or change in order to get this skript running. Further, we provide the code for installing all needed packages and activate them.
+To start the whole working process with the monitoring data and finally the statistical analyses, we first have to set the working directory. Also, we have to install and activate several R packages that are used in the following working process of the skript.
 
 ```{r, message=FALSE}
 # Setting the working directory
+# You might want to change the PFAD to your prefered saving location
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 
-# Installing packages if needed
+# Installing  required packages, if they are not installed yet
 if("lubridate" %in% rownames(installed.packages())  == FALSE) {install.packages("lubridate")}
 if("ggplot2" %in% rownames(installed.packages())    == FALSE) {install.packages("ggplot2")}
 if("reshape" %in% rownames(installed.packages())    == FALSE) {install.packages("reshape")}
-if("EcoSimR" %in% rownames(installed.packages())    == FALSE) {install.packages("EcoSimR")}
 if("pwr" %in% rownames(installed.packages())        == FALSE) {install.packages("pwr")}
 
-# Loading packages
+# Loading the packages for the skript to work
 library(lubridate)
 library(ggplot2)
 library(reshape)
-library(EcoSimR)
 library(pwr)
 ```
 
 
 ## Revising the original data
 
-Now we read the original data and directly resave it as an archive datafile. In the working datafile `Gdata`, we rename the columns for easier handling.
+After setting the working directory and activating the required R packages, we read the data we want to work with. To always be sure to have a backup of the data, we directly create a second dataset `GdataORIG`, which is exactly the same as the one we already read in. Hopefully, we will never need this backup, but you never know what happens. As the last step in initially revising the monitoring data, we check the column names and - in case we cannot efficiently work with the given ones, change them for easier processing. `Gdata` from now on is data we work with.
 
 ```{r, results='hide'}
-# Load the original datatable
+# Reading the original datatable
+# For this, the file "IndID Auszug 01.Sep 15 All In.csv" has to be copied into the previously set working directory
 Gdata <- read.csv2("IndID Auszug 01.Sep 15 All In.csv",
                    header = T,
                    sep = ";",
                    na.strings = "")
 
-# Resaving original datatable as archive table
+# Resaving the data a backup dataset
 GdataORIG <- Gdata
 
-# Show original column names
+# Checking the column names and changing them short and more efficient ones
 names(Gdata)
-
-# Renaming columns
-names(Gdata)[names(Gdata) == "DataSet"]     <- "taxon"
-names(Gdata)[names(Gdata) == "Bemerkung1"]  <- "notes"
-names(Gdata)[names(Gdata) == "day_night"]   <- "light"
-names(Gdata)[names(Gdata) == "Art."]        <- "spp"
-names(Gdata)[names(Gdata) == "FangDatum"]   <- "date"
-names(Gdata)[names(Gdata) == "FangOrt"]     <- "site"
-names(Gdata)[names(Gdata) == "FangZeit"]    <- "time"
-names(Gdata)[names(Gdata) == "IndID"]       <- "iid"
-names(Gdata)[names(Gdata) == "Sex"]         <- "sex"
-names(Gdata)[names(Gdata) == "Typ1"]        <- "trap"
-names(Gdata)[names(Gdata) == "Vertrauen"]   <- "trust"
-
-# Control new column names
+colnames(Gdata) <- c("taxon", "notes", "light", "spp", "date", "site", "time", "iid", "sex", "trap", "trust")
 names(Gdata)
 ```
 
 
-Now, we have a table that we can further process.
-First of all, we do not need the columns "notes" and "iid" (individual ID) and correct some oversight mistakes within the datatable. Also, we do have 2 levels of trust within the whole datatable - 1 and 2. Trust level "2" is good, level "1" not so much. Those datapoint with no trust level at all are deleted at once.
+With `Gdata`, we now have a dataser that we can further process very efficiently.
+First of all, we already know we will not need the columns "notes" and "iid" (individual ID). Also, we check for oversight mistakes within the dataset.
+From the monitoring, we have two levels of trust within the dataset: 1 and 2. Trust level "2" is good, level "1" not so much. The dataset also contains monitoring information with no trust level at all, which we delete at once, as we cannot be sure at all about their correctness in species identification.
 
 ```{r, results='hide'}
 # Deleting the "notes" and "iid" columns
@@ -128,7 +116,7 @@ Gdata$notes <- NULL
 Gdata$iid <- NULL
 names(Gdata)
 
-# Delete all rows, where the trust level is equal 0 (= NA)
+# Deleting the datapoints/rows, where no trust level is specified (= NA)
 Gdata <- subset(Gdata, Gdata$trust != "NA")
 Gdata <- droplevels(Gdata)
 summary(Gdata)
@@ -163,7 +151,8 @@ summary(Gdata$sex)
 
 ## Processing the data for further uses
 
-For getting an overview plot of our data, we sort the whole datatable by date. Thus, we add two columns. Each one for the year and for the month. Afterwards we would like to produce a first plot, so we also add two columns containing information about the month and the day number.
+For getting first a first idea about the given monitoring data, we want to create an overview plot of the daily trapping success during the past years.
+For such a plot, we need to sort the whole dataset by date. Thus, we add two columns - each one column for the year and for the month of the row. Two more columns are added containing the written month and the day number of the date within the whole year.
 
 ```{r, results='hide'}
 # Creating the column "year"
@@ -172,10 +161,10 @@ Gdata <- cbind(Gdata, "year" = format(as.Date(Gdata$date, "%d.%m.%Y"), "%Y"))
 # Creating the column "month"
 Gdata <- cbind(Gdata, "month" = format(as.Date(Gdata$date, "%d.%m.%Y"), "%m"))
 
-# Creating a column, in which the month is written out
+# Creating the column, in which the month is written out
 Gdata <- cbind(Gdata, "monat" = format(as.Date(Gdata$date, "%d.%m.%Y"), "%B"))
 
-# Creating a column, in which for each day we define the day number within a year
+# Creating a column, in which we define the day number within the year
 # Here, the package "lubridate" is needed
 library(lubridate)
 Gdata <- cbind(Gdata, "day_nr" = yday(as.Date(Gdata$date, "%d.%m.%Y")))
@@ -185,20 +174,25 @@ Gdata <- Gdata[order(Gdata$month),]
 ```
 
 
-Also, for later `cast`-processing, we create a "value" column.
+Last but not least, we need to add another "value" column with a "1" in every row as presence information for each row defining one specimen being trapped. This is needed for later dataset transformations for the analyses.
 
 ```{r, results='hide'}
-# Creating the "value" column, which contains availability information (yes/no)
+# Creating the "value" column, which contains presence information (1 = yes)
 Gdata <- cbind(Gdata, "value" = 1)
 ```
 
+Now, `Gdata` is a very nice organized and structured dataset we can work with during the whole following statistical process.
 
 
 
-Now that we organized the datatable for a bit, we are ready to create a first overview plot about how many individuals were trapped thoughout the years.
+### Creating overview graphs of the monitoring/trapping success
+
+We are ready to create a first overview plot about how many individuals were trapped thoughout the years.
 
 ```{r, results='hide', fig.show='hide'}
 # Creating a colour palette for the plot
+# Here, the package "ggplot2" is needed
+library(lubridate)
 colourpalette10 <- c("#596137",
                      "#BD57C7",
                      "#7FCD4E",
@@ -236,25 +230,29 @@ plotORIG <- ggplot(Gdata, aes(x = day_nr, fill = monat))+
 plotORIG
 ```
 
-
-As we can see in this `plotORIG`, is does not make sense to include those data points, where we neither know the trapping site nor the trapping year.
-So next, we delete those rows out of the datatable where this information is not noted. Further, we would like to have data rows with Arctiinae and 2nd trust level only. So we delete all other datapoints. Finally, as it does not make sense to keep them, we delete all rows where we do not know the species number.
+As we can see in this `plotORIG`, is does not make any sense to include those data points we neither know the trapping site nor the trapping year. Thus, we delete those rows of the dataset this information is not given.
+Due to the fact that this is the first try to get some niche overlap or cooccurrence information from the monitoring data, we want to keep the dataset as precise as possible for the moment. So we agreed to only analyse the taxon of Arctiinae and the 2nd trust level only. All other rows are deleted in the next step. Finally, as we cannot get any information out of those rows with no species identification number, we also drop those rows.
 
 ```{r, results='hide'}
-# Deleting all rows, where the taxon is not "Arct", the "spp" and "site" are not noted, the trust level is not "2" and where we dont have a specific trapping "year" noted
-Gdata <- subset(Gdata, taxon == "Arct")
-Gdata <- subset(Gdata, spp != "NA")
+# Deleting all rows, where the taxon is not "Arct", the "spp" and "site" are not given, the trust level is not "2" and where we do not have a specific trapping "year" noted
 Gdata <- subset(Gdata, site != "NA")
-Gdata <- subset(Gdata, trust == "2")
 Gdata <- subset(Gdata, year != "NA")
+Gdata <- subset(Gdata, taxon == "Arct")
+Gdata <- subset(Gdata, trust == "2")
+Gdata <- subset(Gdata, spp != "NA")
 Gdata <- droplevels(Gdata)
 ```
 
-Now, we repeat plotting this. This plot includes all the datapoints that probably are more interesting to look at, as all basic information are given we need for further analyses and interpretation.
+
+Now, we repeat plotting the cleaned monitoring data.
+This `overview_plot` includes all the datapoints that probably are more interesting to look at, as all basic information are given we need for further analyses and interpretation.
+
+You can see one graphical line per trapping site (EBN and PP) and year (for EBN 2007 to 2015 and for PP 2010, 2013 and 2015). On the x-axis, you can see the number of the day thoughout each year (1-365), devided into time periods of each one week. On the y acis, you can see the number of trapped Arctiinae individuals. As the graph displays the total number of individuals trapped per day, you cannot see any information regarding single species. Every month where trapping has taken place is marked in differnt colour, in order to easily distinguish between the months not only by day number but also directly within the graphical lines.
 
 ```{r, fig.cap='plot2', fig.ext='pdf', fig.height=27, fig.width=17, dpi=300}
 # Creating overview_plot
 # Here, the package "ggplot2" is needed
+library(lubridate)
 overview_plot <- ggplot(Gdata, aes(x = day_nr, fill = monat))+
   scale_fill_manual(name = "Month", values = colourpalette10,
                     breaks = c("Januar",
@@ -286,7 +284,6 @@ overview_plot
 
 ########### BRAUCHEN WIR DIES NOCH ?###########
 Subsetting function bases
-
 ```{r, eval=FALSE}
 # dataset_split <- function(data, light = FALSE, site = FALSE, trap = FALSE, month_start = "01", month_end = "12"){}
 
@@ -294,16 +291,17 @@ Subsetting function bases
 
 # column_split <- function(data, light = FALSE, base_interval = "days"){}
 ```
-
 ```{r, eval=FALSE}
 # subsetting(Gdata2, trap = "L", month_start = "05", month_end = "11")
 ```
 ########### BRAUCHEN WIR DIES NOCH ?###########
 
 
+For the final analyses of the dataset regarding temporal niche and cooccurrence interactions within the Arctiinae in EBN and PP, we need to transform the dataset.
+Currently, the dataset consists out of a table with each row representing one trapped specimen. With the function `cast_site`, we transfer this table into each one new dataset per site, where each row represents not one specimen but one species and each column contains the presence information (1=yes, 0=no) for one trapping date.
+Those datasets will be the input for the Pianka and Czekanowski analyses, two different niche overlap indices.
 
-Transforming the datasets into the Pianka and Czekanowski input format.
-
+########### BRAUCHEN WIR DIES NOCH ?###########
 `cast_EBN`
 ```{r, results='hide'}
 # Creating a subset, which only contains data from EBN
@@ -324,7 +322,6 @@ cast_EBN <- cast(aggregate(Gdata_EBN$value,
 rownames(cast_EBN) <- cast_EBN$Group.1
 cast_EBN <- cast_EBN[,-1]
 ```
-
 `cast_PP`
 ```{r, results='hide'}
 # Creating a subset, which only contains data from PP
@@ -345,24 +342,24 @@ cast_PP <- cast(aggregate(Gdata_PP$value,
 rownames(cast_PP) <- cast_PP$Group.1
 cast_PP <- cast_PP[,-1]
 ```
+########### BRAUCHEN WIR DIES NOCH ?###########
 
-As function:
 ```{r}
-# Gdata ==> cast_"site"
-# package "reshape" is needed
+# This code block is the cast_"site" function,
+# which needs to be loaded one time in order to run it afterwards
 cast_site <- function(data, site = "missing"){
+  # Here, the package "reshape" is needed for the cast transformation
   if("reshape" %in% rownames(installed.packages()) == FALSE) {install.packages("reshape")}
   library(reshape)
+  # Subsetting the dataset to only contain rows of the requested site
   if (site == "PP"){
-    #subset, which only contains data from PP
     data_sub <- subset(data, site == "PP")}
   else
     if (site == "EBN"){
-      #subset, which only contains data from EBN
       data_sub <- subset(data, site == "EBN")}
     else
       {return("Error: Please set site to EBN or PP")}
-  #transforming the data into cast-format
+  # Transforming the dataset into the described cast-format
   cast <- cast(aggregate(data_sub$value,
                        by = list(data_sub$spp, data_sub$date),
                        FUN = "sum",
@@ -370,19 +367,27 @@ cast_site <- function(data, site = "missing"){
                   Group.1 ~ Group.2,
                   value = "x",
                   "sum")
-    #changing the species to front column and deleting the species column
+    # Changing the species identification information to the front column and
     rownames(cast) <- cast$Group.1
+    # deleting the species column inside the table
     cast <- cast[,-1]
     return(cast)
 }
+```
 
+Once the function has been loaded, we can run it and get one `cast_EBN` and one `cast_PP` dataset for further niche overlap analyses.
+
+```{r}
 cast_EBN <- cast_site(Gdata, site = "EBN")
 cast_PP <- cast_site(Gdata, site = "PP")
 ```
 
 
 
-### Running the Pianka and Czekanowski niche overlap probability for each site
+### Running the Pianka and Czekanowski niche overlap analyses for each site
+
+########### HIER MUSS DIE nicheoverlap FUNKTION EINGEBUNDEN WERDEN ###########
+
 
 For EBN.
 ```{r, results='hide'}
@@ -429,6 +434,25 @@ write.table(EBN_C, file = "nicheoverlap_observations_EBN_Czekanowski.txt",
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 ```
 
+```{r}
+# Creating an overview plot on the results
+plot(EBN_p[,3], EBN_c[,3],
+     main = "Niche Overlap Probabilities in EBN (2007-2015)",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+  #adding the subset datasets (>=0.5 prob) to the plot, subsetting code see below
+  abline(h = 0.5, v = 0.5, lty = 3, col = "grey")
+  # EBN_p_cut0.5[,3], col = "red"
+  
+#adding the upper probabilities (>=0.5) as red crosses, as they are used for RA4 analyses
+#subsetting the data, so only >=0.5 probability species pairs are in the dataset
+EBN_p_cut0.5 <- subset(EBN_p, TempOverlapProb >= 0.5)
+EBN_c_cut0.5 <- subset(EBN_c, TempOverlapProb >= 0.5)
+```
+
+
 For PP.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for PP
@@ -472,6 +496,23 @@ write.table(PP_C, file = "nicheoverlap_observations_PP_Czekanowski.txt",
 
 # Re-setting to process working directory
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
+```
+
+```{r}
+# Creating an overview plot on the results
+plot(PP_p[,3], PP_c[,3],
+     main = "Niche Overlap Probabilities in Peru Panguana (2010/2013/2015)",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+  #adding the subset datasets (>=0.75 prob) to the plot, subsetting code see below
+  abline(h = 0.75, v = 0.75, lty = 3, col = "grey")
+
+#adding the upper probabilities (>=0.5) as red crosses, as they are used for RA4 analyses
+#subsetting the data, so only >=0.5 probability species pairs are in the dataset
+PP_p_cut0.75 <- subset(PP_p, TempOverlapProb >= 0.75)
+PP_c_cut0.75 <- subset(PP_c, TempOverlapProb >= 0.75)
 ```
 
 
