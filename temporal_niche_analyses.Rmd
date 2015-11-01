@@ -65,7 +65,7 @@ The data used in our analyses come from the long-term monitoring trapping of the
 
 To start the whole working process with the monitoring data and finally the statistical analyses, we first have to set the working directory. Also, we have to install and activate several R packages that are used in the following working process of the skript.
 
-```{r, message=FALSE}
+```{r packages, message=FALSE}
 # Setting the working directory
 # You might want to change the PFAD to your prefered saving location
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
@@ -88,7 +88,7 @@ library(pwr)
 
 After setting the working directory and activating the required R packages, we read the data we want to work with. To always be sure to have a backup of the data, we directly create a second dataset `GdataORIG`, which is exactly the same as the one we already read in. Hopefully, we will never need this backup, but you never know what happens. As the last step in initially revising the monitoring data, we check the column names and - in case we cannot efficiently work with the given ones, change them for easier processing. `Gdata` from now on is data we work with.
 
-```{r, results='hide'}
+```{r readin Gdata, results='hide'}
 # Reading the original datatable
 # For this, the file "IndID Auszug 01.Sep 15 All In.csv" has to be copied into the previously set working directory
 Gdata <- read.csv2("IndID Auszug 01.Sep 15 All In.csv",
@@ -120,7 +120,7 @@ With `Gdata`, we now have a dataser that we can further process very efficiently
 First of all, we already know we will not need the columns "notes" and "iid" (individual ID). Also, we check for oversight mistakes within the dataset.
 From the monitoring, we have two levels of trust within the dataset: 1 and 2. Trust level "2" is good, level "1" not so much. The dataset also contains monitoring information with no trust level at all, which we delete at once, as we cannot be sure at all about their correctness in species identification.
 
-```{r, results='hide'}
+```{r correcting oversight mistakes, results='hide'}
 # Deleting the "notes" and "iid" columns
 Gdata$notes <- NULL
 Gdata$iid <- NULL
@@ -164,7 +164,7 @@ summary(Gdata$sex)
 For getting first a first idea about the given monitoring data, we want to create an overview plot of the daily trapping success during the past years.
 For such a plot, we need to sort the whole dataset by date. Thus, we add two columns - each one column for the year and for the month of the row. Two more columns are added containing the written month and the day number of the date within the whole year.
 
-```{r, results='hide'}
+```{r cbind dates, results='hide'}
 # Creating the column "year"
 Gdata <- cbind(Gdata, "year" = format(as.Date(Gdata$date, "%d.%m.%Y"), "%Y"))
 
@@ -186,7 +186,7 @@ Gdata <- Gdata[order(Gdata$month),]
 
 Last but not least, we need to add another "value" column with a "1" in every row as presence information for each row defining one specimen being trapped. This is needed for later dataset transformations for the analyses.
 
-```{r, results='hide'}
+```{r cbind value, results='hide'}
 # Creating the "value" column, which contains presence information (1 = yes)
 Gdata <- cbind(Gdata, "value" = 1)
 ```
@@ -199,7 +199,7 @@ Now, `Gdata` is a very nice organized and structured dataset we can work with du
 
 We are ready to create a first overview plot about how many individuals were trapped thoughout the years.
 
-```{r, results='hide', fig.show='hide'}
+```{r plotORIG, results='hide', fig.show='hide'}
 # Creating a colour palette for the plot
 # Here, the package "ggplot2" is needed
 library(lubridate)
@@ -243,7 +243,7 @@ plotORIG
 As we can see in this `plotORIG`, is does not make any sense to include those data points we neither know the trapping site nor the trapping year. Thus, we delete those rows of the dataset this information is not given.
 Due to the fact that this is the first try to get some niche overlap or cooccurrence information from the monitoring data, we want to keep the dataset as precise as possible for the moment. So we agreed to only analyse the taxon of Arctiinae and the 2nd trust level only. All other rows are deleted in the next step. Finally, as we cannot get any information out of those rows with no species identification number, we also drop those rows.
 
-```{r, results='hide'}
+```{r subsetting, results='hide'}
 # Deleting all rows, where the taxon is not "Arct", the "spp" and "site" are not given, the trust level is not "2" and where we do not have a specific trapping "year" noted
 Gdata <- subset(Gdata, site != "NA")
 Gdata <- subset(Gdata, year != "NA")
@@ -259,7 +259,7 @@ This `overview_plot` includes all the datapoints that probably are more interest
 
 You can see one graphical line per trapping site (EBN and PP) and year (for EBN 2007 to 2015 and for PP 2010, 2013 and 2015). On the x-axis, you can see the number of the day thoughout each year (1-365), devided into time periods of each one week. On the y acis, you can see the number of trapped Arctiinae individuals. As the graph displays the total number of individuals trapped per day, you cannot see any information regarding single species. Every month where trapping has taken place is marked in differnt colour, in order to easily distinguish between the months not only by day number but also directly within the graphical lines.
 
-```{r, fig.cap='plot2', fig.ext='pdf', fig.height=27, fig.width=17, dpi=300}
+```{r overview_plot, fig.cap='plot2', fig.ext='pdf', fig.height=27, fig.width=17, dpi=300}
 # Creating overview_plot
 # Here, the package "ggplot2" is needed
 library(lubridate)
@@ -354,7 +354,7 @@ cast_PP <- cast_PP[,-1]
 ```
 ########### BRAUCHEN WIR DIES NOCH ?###########
 
-```{r}
+```{r cast_site function}
 # This is the cast_"site" functionn for transforming the dataset to required input format
 # As a function, the code block needs to be loaded once for running afterwards
 cast_site <- function(data, site = "missing"){
@@ -387,7 +387,7 @@ cast_site <- function(data, site = "missing"){
 
 Once the function has been loaded, we can run it and get one `cast_EBN` and one `cast_PP` dataset for further niche overlap analyses.
 
-```{r}
+```{r run cast_site}
 cast_EBN <- cast_site(Gdata, site = "EBN")
 cast_PP <- cast_site(Gdata, site = "PP")
 ```
@@ -402,7 +402,7 @@ So first, we load three functions:
 • `organized_txt`: Automatic and organized saving of the analysis results
 • `nicheoverlap`: Niche overlap function, based on the Pianka and Czekanowski indices
 
-```{r}
+```{r main functions}
 # The RA4 randomization process as a modification of the
 # RA4 function {EcosimR} to avoid upcoming error messages
 # As a function, the code block needs to be loaded once for running afterwards
@@ -501,7 +501,7 @@ nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, t
 The first step within our analysis is to run the `nicheoverlap` function with the original monitoring data, in order to know the actually observed species pairs with their cooccurrence probability.
 ATTENTION! Runnung these functions needs a lot of time due to very large size of the original input datasets. Thus, we saved the result tables as files and provide you with a read-in code, which you can find below.
 
-```{r}
+```{r run observations nicheoverlap analyses}
 EBN_p <- nicheoverlap(cast_EBN, method = "pianka", ra4 = FALSE, site = "EBN")
 EBN_c <- nicheoverlap(cast_EBN, method = "czekanowski", ra4 = FALSE, site = "EBN")
 PP_p <- nicheoverlap(cast_PP, method = "pianka", ra4 = FALSE, site = "PP")
@@ -602,7 +602,7 @@ setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 
 As running the niche overlap analyses with the observed data needs quite some time, you can read the results with the following code block.
 
-```{r, results='hide'}
+```{r read observation n.o. analyses results, results='hide'}
 # Setting target folder (Dropbox) as working directory
 setwd("~/Dropbox/Co-occurrence/Results/Tables")
 
@@ -628,7 +628,7 @@ setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 Due to the required processing time, we chose to reduce the size of the input data. We chose to only take those species for future analyses that are part of at least one species pair with an upper cooccurrence probability. Nevertheless, we tried to keep as many species within the analyes as possible.
 Thus, we plotted the observation analysis results and chose a threshold value for future analyses. For EBN, we chose >=0.5 as the threshold value (57 species pairs, 79 single species within the Pianka and 20 single species within the Czekanowski analysis). For PP, we chose >=0.75 as the threshold value (240 species pairs, 152 single species within the Pianka and 103 single species within the Czekanowski analysis). In the following plots, you can see the species spairs of the total dataset (Czekanowski probability over Pianka probability), the species pairs for future analyses are marked in red.
 
-```{r}
+```{r probabilities subsets EBN}
 # Subsetting the results from the EBN pianka dataset, so only >=0.5 probability species pairs are in the future analyses (this subset is used for the followig plot!)
 EBN_p_cut0.5 <- subset(EBN_p, TempOverlapProb >= 0.5)
 
@@ -646,7 +646,7 @@ plot(EBN_p[,3], EBN_c[,3],
          col = "red")
 ```
 
-```{r}
+```{r probabilities subsets PP}
 # Subsetting the results from the EBN pianka dataset, so only >=0.75 probability species pairs are in the future analyses (this subset is used for the followig plot!)
 PP_p_cut0.75 <- subset(PP_p, TempOverlapProb >= 0.75)
  
@@ -686,7 +686,7 @@ choose(nrow(cast_PP_75),2)/choose(nrow(cast_PP),2)*100 #percentage of combinatio
 ########### BRAUCHEN WIR DIES NOCH ?###########
 
 Input data for RA4 analyses:
-```{r}
+```{r cast_site_prob funtcion}
 # get the species of the species pairs that show >=X prob overlap in the observations datasets
 cast_site_prob <- function(data, prob = 0.50, site = "missing"){
   if(site %in% c("PP", "EBN")){
@@ -703,7 +703,9 @@ cast_site_prob <- function(data, prob = 0.50, site = "missing"){
   else
       {return("Error: Please set site to EBN or PP")}
 }
+```
 
+```{r run cast_site_prob}
 # input data is the observation overlap result dataset of the particular site
 cast_EBN_p_prob0.5 <- cast_site_prob(EBN_p, prob = 0.5, site = "EBN")
 cast_EBN_c_prob0.5 <- cast_site_prob(EBN_c, prob = 0.5, site = "EBN")
@@ -711,7 +713,7 @@ cast_PP_p_prob0.75 <- cast_site_prob(PP_p, prob = 0.75, site = "PP")
 cast_PP_c_prob0.75 <- cast_site_prob(PP_c, prob = 0.75, site = "PP")
 ```
 
-```{r}
+```{r comparison cast datasets}
 #compare the amount of species in the raw and the subsetted dataset
 nrow(cast_EBN)
 nrow(cast_EBN_p_prob0.5)
@@ -722,11 +724,11 @@ choose(nrow(cast_EBN_p_prob0.5),2)/choose(nrow(cast_EBN),2)*100 #percentage of c
 
 Running the nicheoverlap funtion as main RA4 analyses:
 
-```{r}
+```{r run ra4 nicheoverlap analyses}
 nicheoverlap(cast_PP_p_prob0.75, method = "pianka", iterations = 8, txt = T, site = "PP")
 ```
 
-########### BRAUCHEN WIR DIES NOCH ?###########
+########### BRAUCHEN WIR DIES NOCH ? IST OBEN NEU EINGEORDNET ###########
 ```{r}
 #ra4 randomization
 #modification of ra4 function {EcosimR} to avoid error msg
@@ -812,10 +814,10 @@ nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, t
 
 nicheoverlap_EBN_p <- nicheoverlap(cast_EBN_p_prob0.5, method = "pianka", ra4 = F, iterations = 10, txt = T, site = "EBN")
 ```
-########### BRAUCHEN WIR DIES NOCH ?###########
+########### BRAUCHEN WIR DIES NOCH ? IST OBEN NEU EINGEORDNET ###########
 
 
-```{r}
+```{r readin_txt function}
 #read in the results
 readin_txt <- function(method, site){
   file_list <- list.files(paste(getwd(), "/", 
@@ -846,17 +848,29 @@ readin_txt <- function(method, site){
 }
 ```
 
-```{r}
+```{r power analysis}
 #t-test power analysis
 if("pwr" %in% rownames(installed.packages()) == FALSE) {install.packages("pwr")}
 library(pwr)
 #package pdf: https://cran.r-project.org/web/packages/pwr/pwr.pdf
 ```
 
-```{r}
+```{r t-test}
 #t-test
-
+t.test()
 ```
+
+```{r kolmoronov-smirnov/shapiro & wilcoxon}
+#kolmoronov-smirnov
+ks.test()
+
+#shapiro test
+shapiro.test()
+
+#wilcoxon test
+wilcox.test()
+```
+
 
 
 - - - - - - - - - -
