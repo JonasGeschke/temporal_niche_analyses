@@ -817,7 +817,7 @@ nicheoverlap_EBN_p <- nicheoverlap(cast_EBN_p_prob0.5, method = "pianka", ra4 = 
 
 ```{r}
 #read in the results
-readin <- function(site, method){
+readin_txt <- function(method, site){
   file_list <- list.files(paste(getwd(), "/", 
                                 method, "/", 
                                 site, 
