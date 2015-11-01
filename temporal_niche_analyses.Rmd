@@ -723,7 +723,7 @@ choose(nrow(cast_EBN_p_prob0.5),2)/choose(nrow(cast_EBN),2)*100 #percentage of c
 Running the nicheoverlap funtion as main RA4 analyses:
 
 ```{r}
-nicheoverlap_EBN_p0.5 <- nicheoverlap(cast_EBN_p_prob0.5, method = "pianka", iterations = 10, txt = T, site = "EBN")
+nicheoverlap(cast_PP_p_prob0.75, method = "pianka", iterations = 8, txt = T, site = "PP")
 ```
 
 ########### BRAUCHEN WIR DIES NOCH ?###########
