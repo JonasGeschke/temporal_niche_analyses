@@ -101,7 +101,17 @@ GdataORIG <- Gdata
 
 # Checking the column names and changing them short and more efficient ones
 names(Gdata)
-colnames(Gdata) <- c("taxon", "notes", "light", "spp", "date", "site", "time", "iid", "sex", "trap", "trust")
+colnames(Gdata) <- c("taxon",
+                     "notes",
+                     "light",
+                     "spp",
+                     "date",
+                     "site",
+                     "time",
+                     "iid",
+                     "sex",
+                     "trap",
+                     "trust")
 names(Gdata)
 ```
 
@@ -400,7 +410,8 @@ ra4_mod <- function(speciesData) {
     NonZeroRowShuffle <- function(vec = runif(10)) {
         nonzero <- which(vec > 0)
         shuffledvec <- vec
-        shuffledvec[nonzero] <- vec[sample(nonzero, length(nonzero))] #mod: added length() to avoid error msg
+        shuffledvec[nonzero] <- vec[sample(nonzero, 
+                                           length(nonzero))] #mod: added length() to avoid error msg
         return(shuffledvec)
     }
     #split the dataset into rows which have more than one observation and rows that have only one
@@ -423,8 +434,15 @@ organized_txt <- function(data_spp, method, site){
       for(i in dir_list){dir.create(i)}}
     colnames(data_spp) <- c("Spp1", "Spp2", (paste("Prob", 1:(ncol(data_spp)-2), sep = "_")))
     write.table(data_spp,
-                file = paste(getwd(), "/", method, "/", site, "/", method,"_", site,"_", Sys.Date(), "_",
-                             format(Sys.time(), "%H-%M"), ".txt", sep=""),
+                file = paste(getwd(), "/", 
+                             method, "/", 
+                             site, "/", 
+                             method,"_", 
+                             site,"_", 
+                             Sys.Date(), "_",
+                             format(Sys.time(), "%H-%M"), 
+                             ".txt", 
+                             sep=""),
                 sep = "\t",
                 row.names = F)
     return(data_spp)
@@ -622,7 +640,10 @@ plot(EBN_p[,3], EBN_c[,3],
      pch = 3)
   mtext("(Each cross symbolizes one species pair, the red ones have prob >= 0.5)")
   abline(h = 0.5, v = 0.5, lty = 3, col = "grey")
-  points(EBN_p_cut0.5[,3], subset(EBN_c, rownames(EBN_c) %in% rownames(EBN_p_cut0.5))[,3], pch = 3, col = "red")
+  points(EBN_p_cut0.5[,3], 
+         subset(EBN_c, rownames(EBN_c) %in% rownames(EBN_p_cut0.5))[,3], 
+         pch = 3, 
+         col = "red")
 ```
 
 ```{r}
@@ -637,7 +658,10 @@ plot(PP_p[,3], PP_c[,3],
      pch = 3)
   mtext("(Each cross symbolizes one species pair, the red ones have prob >= 0.75)")
   abline(h = 0.75, v = 0.75, lty = 3, col = "grey")
-  points(PP_p_cut0.75[,3], subset(PP_c, rownames(PP_c) %in% rownames(PP_p_cut0.75))[,3], pch = 3, col = "red")
+  points(PP_p_cut0.75[,3], 
+         subset(PP_c, rownames(PP_c) %in% rownames(PP_p_cut0.75))[,3], 
+         pch = 3, 
+         col = "red")
 ```
 
 
@@ -794,12 +818,25 @@ nicheoverlap_EBN_p <- nicheoverlap(cast_EBN_p_prob0.5, method = "pianka", ra4 = 
 ```{r}
 #read in the results
 readin <- function(site, method){
-  file_list <- list.files(paste(getwd(), "/", method, "/", site, sep=""))
+  file_list <- list.files(paste(getwd(), "/", 
+                                method, "/", 
+                                site, 
+                                sep=""))
   #initialize empty dataframe
-  data <- read.table(paste(getwd(), "/", method, "/", site, "/", file_list[1], sep=""), header = TRUE)
+  data <- read.table(paste(getwd(), "/", 
+                           method, "/", 
+                           site, "/", 
+                           file_list[1], 
+                           sep=""), 
+                     header = TRUE)
   for (i in file_list[-1]) {
     #read in the seperate files each indicated by the id number
-    readin <- read.table(paste(getwd(), "/", method, "/", site, "/", i, sep=""), header = TRUE)
+    readin <- read.table(paste(getwd(), "/", 
+                               method, "/", 
+                               site, "/", 
+                               i, 
+                               sep=""), 
+                         header = TRUE)
     #cbind the readin data into the dataframe data
     data <- cbind(data, readin[,3:ncol(readin)])
   }
