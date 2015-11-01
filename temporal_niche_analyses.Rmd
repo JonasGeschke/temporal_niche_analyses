@@ -620,7 +620,7 @@ plot(EBN_p[,3], EBN_c[,3],
      xlab =  "Pianka",
      ylab = "Czekanowski",
      pch = 3)
-  mtext("(Each cross symbolizes one pair of species)")
+  mtext("(Each cross symbolizes one species pair, the red ones have prob >= 0.5)")
   abline(h = 0.5, v = 0.5, lty = 3, col = "grey")
   points(EBN_p_cut0.5[,3], subset(EBN_c, rownames(EBN_c) %in% rownames(EBN_p_cut0.5))[,3], pch = 3, col = "red")
 ```
@@ -635,7 +635,7 @@ plot(PP_p[,3], PP_c[,3],
      xlab =  "Pianka",
      ylab = "Czekanowski",
      pch = 3)
-  mtext("(Each cross symbolizes one pair of species)")
+  mtext("(Each cross symbolizes one species pair, the red ones have prob >= 0.75)")
   abline(h = 0.75, v = 0.75, lty = 3, col = "grey")
   points(PP_p_cut0.75[,3], subset(PP_c, rownames(PP_c) %in% rownames(PP_p_cut0.75))[,3], pch = 3, col = "red")
 ```
