@@ -840,7 +840,8 @@ readin_txt <- function(method, site){
     #cbind the readin data into the dataframe data
     data <- cbind(data, readin[,3:ncol(readin)])
   }
-  colnames(data) <- c("Spp1", "Spp2", (paste("Prob", 1:(ncol(data)-2), sep = "_")))
+  colnames(data) <- c("Spp1", "Spp2", 
+                      (paste("Prob", 1:(ncol(data)-2), sep = "_")))
     return(data)
 }
 ```
