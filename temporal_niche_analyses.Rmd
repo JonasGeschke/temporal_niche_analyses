@@ -388,7 +388,7 @@ cast_PP <- cast_site(Gdata, site = "PP")
 
 ########### HIER MUSS DIE nicheoverlap FUNKTION EINGEBUNDEN WERDEN ###########
 
-
+########### BRAUCHEN WIR DIES NOCH ?###########
 For EBN.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for EBN
@@ -433,26 +433,6 @@ write.table(EBN_C, file = "nicheoverlap_observations_EBN_Czekanowski.txt",
 # Re-setting to process working directory
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 ```
-
-```{r}
-# Creating an overview plot on the results
-plot(EBN_p[,3], EBN_c[,3],
-     main = "Niche Overlap Probabilities in EBN (2007-2015)",
-     xlab =  "Pianka",
-     ylab = "Czekanowski",
-     pch = 3)
-  mtext("(Each cross symbolizes one pair of species)")
-  #adding the subset datasets (>=0.5 prob) to the plot, subsetting code see below
-  abline(h = 0.5, v = 0.5, lty = 3, col = "grey")
-  points(EBN_p_cut0.5[,3], EBN_c_cut0.5[,3], pch = 20, col = "red")
-
-#adding the upper probabilities (>=0.5) as red crosses, as they are used for RA4 analyses
-#subsetting the data, so only >=0.5 probability species pairs are in the dataset
-EBN_p_cut0.5 <- subset(EBN_p, TempOverlapProb >= 0.5)
-EBN_c_cut0.5 <- subset(EBN_c, TempOverlapProb >= 0.5)
-```
-
-
 For PP.
 ```{r, results='hide'}
 # Pianka and Czekanowski analysis for PP
@@ -497,23 +477,7 @@ write.table(PP_C, file = "nicheoverlap_observations_PP_Czekanowski.txt",
 # Re-setting to process working directory
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 ```
-
-```{r}
-# Creating an overview plot on the results
-plot(PP_p[,3], PP_c[,3],
-     main = "Niche Overlap Probabilities in Peru Panguana (2010/2013/2015)",
-     xlab =  "Pianka",
-     ylab = "Czekanowski",
-     pch = 3)
-  mtext("(Each cross symbolizes one pair of species)")
-  #adding the subset datasets (>=0.75 prob) to the plot, subsetting code see below
-  abline(h = 0.75, v = 0.75, lty = 3, col = "grey")
-
-#adding the upper probabilities (>=0.5) as red crosses, as they are used for RA4 analyses
-#subsetting the data, so only >=0.5 probability species pairs are in the dataset
-PP_p_cut0.75 <- subset(PP_p, TempOverlapProb >= 0.75)
-PP_c_cut0.75 <- subset(PP_c, TempOverlapProb >= 0.75)
-```
+########### BRAUCHEN WIR DIES NOCH ?###########
 
 
 Loading the results from original (observations) datasets:
@@ -539,7 +503,37 @@ PP_c <- read.table("nicheoverlap_observations_PP_Czekanowski.txt",
 setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 ```
 
+```{r}
+# Creating an overview plot on the results
+plot(EBN_p[,3], EBN_c[,3],
+     main = "Niche Overlap Probabilities in EBN (2007-2015)",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+  #adding the subset datasets (>=0.5 prob) to the plot, subsetting code see below
+  abline(h = 0.5, v = 0.5, lty = 3, col = "grey")
+  points(EBN_p_cut0.5[,3], subset(EBN_c, rownames(EBN_c) %in% rownames(EBN_p_cut0.5))[,3], pch = 3, col = "red")
 
+#subsetting the pianka data, so only >=0.5 probability species pairs are in the dataset
+EBN_p_cut0.5 <- subset(EBN_p, TempOverlapProb >= 0.5)
+```
+
+```{r}
+# Creating an overview plot on the results
+plot(PP_p[,3], PP_c[,3],
+     main = "Niche Overlap Probabilities in Peru Panguana (2010/2013/2015)",
+     xlab =  "Pianka",
+     ylab = "Czekanowski",
+     pch = 3)
+  mtext("(Each cross symbolizes one pair of species)")
+  #adding the subset datasets (>=0.75 prob) to the plot, subsetting code see below
+  abline(h = 0.75, v = 0.75, lty = 3, col = "grey")
+  points(PP_p_cut0.75[,3], subset(PP_c, rownames(PP_c) %in% rownames(PP_p_cut0.75))[,3], pch = 3, col = "red")
+
+#subsetting the pianka data, so only >=0.5 probability species pairs are in the dataset
+PP_p_cut0.75 <- subset(PP_p, TempOverlapProb >= 0.75)
+```
 
 
 
