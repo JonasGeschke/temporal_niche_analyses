@@ -68,7 +68,7 @@ To start the whole working process with the monitoring data and finally the stat
 ```{r packages, message=FALSE}
 # Setting the working directory
 # You might want to change the PFAD to your prefered saving location
-setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
+setwd("C:/RFiles/temporal niche analysis")
 
 # Installing  required packages, if they are not installed yet
 if("lubridate" %in% rownames(installed.packages())  == FALSE) {install.packages("lubridate")}
@@ -727,6 +727,66 @@ Running the nicheoverlap funtion as main RA4 analyses:
 ```{r run ra4 nicheoverlap analyses}
 nicheoverlap(cast_PP_p_prob0.75, method = "pianka", iterations = 8, txt = T, site = "PP")
 ```
+
+Calculating the tail probabilty of the observed niche overlap.
+```{r}
+tail_probability <- function(observed_overlap, random_overlap){
+        #right outer join by Spp1 and Spp2
+        data <- merge(observed_overlap, random_overlap,
+                      by=c("Spp1","Spp2"),
+                      all.y = TRUE)
+        #create empty dataframe for results
+        results <- data.frame(spp1 = vector(mode="character"),
+                              spp2 = vector(mode="character"),
+                              overlap = vector(mode="numeric"),
+                              difference = vector(mode="character"),
+                              p_value = vector(mode = "numeric"))
+        
+        for(i in 1:nrow(data)){
+                lower_dens <- density(data[i,4:ncol(data)],
+                                      to = data[i, 3],
+                                      n = 1000000)
+                upper_dens <- density(data[i,4:ncol(data)],
+                                      from = data[i, 3],
+                                      n = 1000000)
+                lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
+                upper_tail_prob <- with(upper_dens, sum(y * diff(x)[1]))
+                p_value <- ifelse(lower_tail_prob > upper_tail_prob,
+                                  lower_tail_prob, upper_tail_prob)
+                difference <- ifelse(lower_tail_prob > upper_tail_prob,
+                                     "lower", "higher")
+                results <- rbind(results, c(data[i, 1:3],
+                                            difference,
+                                            p_value))
+        }
+        return(results)
+}
+
+```
+
+
+```{r}
+#create some randomly distributed data
+set.seed(1)
+x <-rnorm(1000)
+#draw a histogramm of the data
+hist(x,freq=FALSE)
+#compute gaussian kernel density estimates and draw it as a line in the histogramm. kernel bandwidth = 
+lines(dens <- density(x))
+lines(dens <- density(x, bw = "SJ"), col = "blue" )
+
+dens
+lines( dens2 <- density(x, from = 1, n = 100000),
+       col="red", lwd = 2)
+lines( dens3 <- density(x, to = 1, n = 100000),
+       col="blue", lwd = 2)
+str(dens2)
+#calculate the sum of the products of y-values and the x
+with(dens2, sum(y * diff(x)[1]))+ with(dens3, sum(y * diff(x)[1]))
+
+
+```
+
 
 ########### BRAUCHEN WIR DIES NOCH ? IST OBEN NEU EINGEORDNET ###########
 ```{r}
