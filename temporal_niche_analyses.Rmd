@@ -71,16 +71,22 @@ To start the whole working process with the monitoring data and finally the stat
 setwd("C:/RFiles/temporal niche analysis")
 
 # Installing  required packages, if they are not installed yet
+if("devtools" %in% rownames(installed.packages())  == FALSE) {install.packages("devtools")}
 if("lubridate" %in% rownames(installed.packages())  == FALSE) {install.packages("lubridate")}
 if("ggplot2" %in% rownames(installed.packages())    == FALSE) {install.packages("ggplot2")}
 if("reshape" %in% rownames(installed.packages())    == FALSE) {install.packages("reshape")}
 if("pwr" %in% rownames(installed.packages())        == FALSE) {install.packages("pwr")}
 
 # Loading the packages for the skript to work
+library(devtools)
 library(lubridate)
 library(ggplot2)
 library(reshape)
 library(pwr)
+
+# Installing and loading our own NicheOverlapR packages, containing all functions needed for running this skript
+install_github("NicheOverlapR", "JonasGeschke")
+library(NicheOverlapR)
 ```
 
 
@@ -935,4 +941,11 @@ wilcox.test()
 
 - - - - - - - - - -
 # Results
+
+
+
+- - - - - - - - - -
+# Appendix
+
+
 
