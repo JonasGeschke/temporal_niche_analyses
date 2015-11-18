@@ -703,7 +703,7 @@ organized_txt <- function(data_spp, method, site){
 # Temporal niche overlap analysis function
 # This is the main function for the Pianka and Czekanowski niche overlap analyses
 # As a function, the code block needs to be loaded once for running afterwards
-nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, txt = FALSE, site = "missing"){
+nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, txt = FALSE, site = "missing", subset = FALSE){
   if(site %in% c("PP", "EBN")){
     data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(data), 2))),
                            Spp2 = factor(rep(1, choose(nrow(data), 2))))
@@ -718,7 +718,10 @@ nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, t
           rel_data <- data/rowSums(data)}
       if(method == "pianka"){
         # Pianka
+        if(subset == FALSE){
         data_p <- cbind(t(combn(rownames(rel_data), 2)), 0)
+        } 
+        else {data_p <- cbind(subset, 0)}
         for (i in 1:nrow(data_p)){
           data_p[i, 3] <- sum(rel_data[data_p[i,1],] * rel_data[data_p[i,2],])/sqrt(sum(rel_data[data_p[i,1],]^2) * sum(rel_data[data_p[i, 2],]^2))
           }}
