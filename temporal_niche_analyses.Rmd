@@ -15,7 +15,7 @@ classoption: a4paper
 # Introduction
 _This skript is the outcome of a selected topic within the MSc Environmental Scienes, Faculty of Environment and Natural Resources, University of Freiburg. The selected topic is supervised by Dr Tim Burzlaff._
 
-The script is about the analysis of monitoring data from both Costa Rica (locations: El Bosque Nuevo Butterfly Farm and the private home of P. Gloor, near San José) and Peru (location: Panguana). The main interest is about looking for existing temporal niche and community interactions within species of Arctiinae and Ithomiini.
+The script is about the analysis of monitoring data from both Costa Rica (locations: El Bosque Nuevo Butterfly Farm and the private home of P. Gloor, near San José) and Peru (location: Panguana). The main interest is about looking for existing temporal niche and community interactions within species of Arctiinae.
 
 
 
@@ -25,15 +25,14 @@ The script is about the analysis of monitoring data from both Costa Rica (locati
 1. co-occurrence approach => not really good results, need to specify actual research question and thereby subsettings of the data => WORKS NO
 2. found paper (see below) => niche overlap approach
 
-The main analysis approach comes from the paper "Temporal Overlap and Co-Occurrence in a Guild of Sub-Tropical Tephritid Fruit Flies" by Lopes GN, Souza-Filho MF, Gotelli NJ, Lemos LJU, Godoy WAC and Zucchi RA (2015) in PLoS ONE 10(7): e0132124, [doi:10.1371/journal.pone.0132124](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0132124). We concentrate on their idea about the niche overlap analyses.
+The main analysis approach comes from the paper "Temporal Overlap and Co-Occurrence in a Guild of Sub-Tropical Tephritid Fruit Flies" by Lopes GN, Souza-Filho MF, Gotelli NJ, Lemos LJU, Godoy WAC and Zucchi RA (2015) in PLoS ONE 10(7): e0132124, [doi:10.1371/journal.pone.0132124](http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0132124). We focus on their idea about the niche overlap analyses.
 
 3. Pianka and Czekanowski => only indices, so edit of the background formular that it fits our needs => WORKS YES
 4. ROSARIO: works with looping time periods (one year, one day) => we dont have proper data => WORKS NO
 5. RA3: null-model approach, which randomized also the null values => transforms our data into pseudo-data => WORKS NO
 6. RA4: null-model apporach, which fixes null values and randomizes the others => WORKS YES
 7. run XXX RA4 randomized datasheets for Pianka/Czekanowski analysis as null-model approach of our temporal overlap apporach
-8. run power-test on how many randomized iterations we actually need
-9. t-test
+8. tail probability test
 
 
 The data used in our analyses come from the long-term monitoring trapping of the Chair of Forest Zoology and Entomology, University of Freiburg, and was undertaken by several staff members and student assistants.
@@ -360,38 +359,8 @@ cast_PP <- cast_PP[,-1]
 ```
 ########### BRAUCHEN WIR DIES NOCH ?###########
 
-```{r cast_site function}
-# This is the cast_"site" functionn for transforming the dataset to required input format
-# As a function, the code block needs to be loaded once for running afterwards
-cast_site <- function(data, site = "missing"){
-  # Here, the package "reshape" is needed for the cast transformation
-  if("reshape" %in% rownames(installed.packages()) == FALSE) {install.packages("reshape")}
-  library(reshape)
-  # Subsetting the dataset to only contain rows of the requested site
-  if (site == "PP"){
-    data_sub <- subset(data, site == "PP")}
-  else
-    if (site == "EBN"){
-      data_sub <- subset(data, site == "EBN")}
-    else
-      {return("Error: Please set site to EBN or PP")}
-  # Transforming the dataset into the described cast-format
-  cast <- cast(aggregate(data_sub$value,
-                       by = list(data_sub$spp, data_sub$date),
-                       FUN = "sum",
-                       na.rm = T),
-                  Group.1 ~ Group.2,
-                  value = "x",
-                  "sum")
-    # Changing the species identification information to the front column and
-    rownames(cast) <- cast$Group.1
-    # deleting the species column inside the table
-    cast <- cast[,-1]
-    return(cast)
-}
-```
 
-Once the function has been loaded, we can run it and get one `cast_EBN` and one `cast_PP` dataset for further niche overlap analyses.
+Now we can run the `cast_site` function contained in our NicheOverlapR package installed from Github and get one `cast_EBN` and one `cast_PP` dataset for further niche overlap analyses.
 
 ```{r run cast_site}
 cast_EBN <- cast_site(Gdata, site = "EBN")
@@ -407,102 +376,6 @@ So first, we load three functions:
 • `ra4_mod`: RA4 randomization process as a modification of the RA4 function of the package "EcosimR"
 • `organized_txt`: Automatic and organized saving of the analysis results
 • `nicheoverlap`: Niche overlap function, based on the Pianka and Czekanowski indices
-
-```{r main functions}
-# The RA4 randomization process as a modification of the
-# RA4 function {EcosimR} to avoid upcoming error messages
-# As a function, the code block needs to be loaded once for running afterwards
-ra4_mod <- function(speciesData) {
-    NonZeroRowShuffle <- function(vec = runif(10)) {
-        nonzero <- which(vec > 0)
-        shuffledvec <- vec
-        shuffledvec[nonzero] <- vec[sample(nonzero, 
-                                           length(nonzero))] #mod: added length() to avoid error msg
-        return(shuffledvec)
-    }
-    #split the dataset into rows which have more than one observation and rows that have only one
-    data_mult_obs <- speciesData[rowSums(speciesData != 0) > 1,]
-    data_solo_obs <- speciesData[rowSums(speciesData != 0) == 1,]
-    RM <- t(apply(data_mult_obs, 1, NonZeroRowShuffle))
-    rownames(RM) <- rownames(data_mult_obs)
-    colnames(RM) <- colnames(data_solo_obs)
-    RM <- rbind(RM, data_solo_obs)
-    return(RM)
-}
-
-# Function for organized automatic saving of our results
-# As a function, the code block needs to be loaded once for running afterwards
-organized_txt <- function(data_spp, method, site){
-  if ("pianka" %in% list.files()|"czekanowski" %in% list.files())
-    {}
-  else
-    {dir_list <- c("pianka", "czekanowski", "pianka/EBN", "pianka/PP", "czekanowski/EBN", "czekanowski/PP")
-      for(i in dir_list){dir.create(i)}}
-    colnames(data_spp) <- c("Spp1", "Spp2", (paste("Prob", 1:(ncol(data_spp)-2), sep = "_")))
-    write.table(data_spp,
-                file = paste(getwd(), "/", 
-                             method, "/", 
-                             site, "/", 
-                             method,"_", 
-                             site,"_", 
-                             Sys.Date(), "_",
-                             format(Sys.time(), "%H-%M"), 
-                             ".txt", 
-                             sep=""),
-                sep = "\t",
-                row.names = F)
-    return(data_spp)
-}
-
-# Temporal niche overlap analysis function
-# This is the main function for the Pianka and Czekanowski niche overlap analyses
-# As a function, the code block needs to be loaded once for running afterwards
-nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, txt = FALSE, site = "missing"){
-  time1 <- Sys.time()
-  print(time1)
-  if(site %in% c("PP", "EBN")){
-    data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(data), 2))),
-                           Spp2 = factor(rep(1, choose(nrow(data), 2))))
-    repeat{
-      if(ra4 == TRUE){
-        #ra4 randomization
-        data_rand <- ra4_mod(data)
-        #convert absolute to relative abundance data
-        rel_data <- data_rand/rowSums(data_rand)}
-      else {
-          #convert absolute to relative abundance data
-          rel_data <- data/rowSums(data)}
-      if(method == "pianka"){
-        # Pianka
-        data_p <- cbind(t(combn(rownames(rel_data), 2)), 0)
-        for (i in 1:nrow(data_p)){
-          data_p[i, 3] <- sum(rel_data[data_p[i,1],] * rel_data[data_p[i,2],])/sqrt(sum(rel_data[data_p[i,1],]^2) * sum(rel_data[data_p[i, 2],]^2))
-          }}
-      else
-      if(method == "czekanowski"){
-        # Czekanowski
-        data_p <- cbind(t(combn(rownames(rel_data), 2)), 0)
-        for (i in 1:nrow(data_p)){
-          data_p[i, 3] <- 1 - 0.5 * sum(abs((rel_data[data_p[i, 1], ] - rel_data[data_p[i, 2], ])))
-        }}
-      else
-      {return("Error: Please set method as pianka or czekanowski")}
-      data_spp[,c(1,2)] <- data_p[,c(1,2)]
-      data_spp <- data.frame(data_spp, data_p[,3])
-      if (ncol(data_spp)-2 == iterations[1]){break}
-    }
-    # write txt cut here
-    if(txt == FALSE)
-    {return(data_spp)}
-    else
-    {organized_txt(data_spp, method = method, site = site)}
-    } else
-    {return("Error: Please set site to EBN or PP")}
-  time2 <- Sys.time()
-  print(time2)
-  print(time2 - time1)
-}
-```
 
 The first step within our analysis is to run the `nicheoverlap` function with the original monitoring data, in order to know the actually observed species pairs with their cooccurrence probability.
 ATTENTION! Runnung these functions needs a lot of time due to very large size of the original input datasets. Thus, we saved the result tables as files and provide you with a read-in code, which you can find below.
@@ -692,24 +565,6 @@ choose(nrow(cast_PP_75),2)/choose(nrow(cast_PP),2)*100 #percentage of combinatio
 ########### BRAUCHEN WIR DIES NOCH ?###########
 
 Input data for RA4 analyses:
-```{r cast_site_prob funtcion}
-# get the species of the species pairs that show >=X prob overlap in the observations datasets
-cast_site_prob <- function(data, prob = 0.50, site = "missing"){
-  if(site %in% c("PP", "EBN")){
-    #extracting the species from spp pairs prob >=X prob into single datasets
-    sub_data_1 <- data$Spp1[data$TempOverlapProb >= prob]
-    sub_data_2 <- data$Spp2[data$TempOverlapProb >= prob]
-    #create one dataset with all the species just extracted
-    if(site == "PP")
-    {cast_prob <- cast_PP[rownames(cast_PP) %in% sub_data_1 | rownames(cast_PP) %in% sub_data_2,]
-      return(cast_prob)}
-    else
-    {cast_prob <- cast_EBN[rownames(cast_EBN) %in% sub_data_1 | rownames(cast_EBN) %in% sub_data_2,]
-      return(cast_prob)}}
-  else
-      {return("Error: Please set site to EBN or PP")}
-}
-```
 
 ```{r run cast_site_prob}
 # input data is the observation overlap result dataset of the particular site
@@ -734,6 +589,7 @@ Running the nicheoverlap funtion as main RA4 analyses:
 nicheoverlap(cast_PP_p_prob0.75, method = "pianka", iterations = 8, txt = T, site = "PP")
 ```
 
+<<<<<<< HEAD
 Calculating the tail probabilty of the observed niche overlap.
 ```{r}
 tail_probability <- function(observed_overlap, random_overlap){
@@ -798,11 +654,83 @@ with(dens2, sum(y * diff(x)[1]))+ with(dens3, sum(y * diff(x)[1]))
 ```{r}
 #ra4 randomization
 #modification of ra4 function {EcosimR} to avoid error msg
+=======
+
+```{r power analysis}
+#t-test power analysis
+if("pwr" %in% rownames(installed.packages()) == FALSE) {install.packages("pwr")}
+library(pwr)
+#package pdf: https://cran.r-project.org/web/packages/pwr/pwr.pdf
+```
+
+```{r t-test}
+#t-test
+t.test()
+```
+
+```{r kolmoronov-smirnov/shapiro & wilcoxon}
+#kolmoronov-smirnov
+ks.test()
+
+#shapiro test
+shapiro.test()
+
+#wilcoxon test
+wilcox.test()
+```
+
+
+
+- - - - - - - - - -
+# Results
+
+
+
+- - - - - - - - - -
+# Appendix
+
+```{r cast_site function, eval=FALSE}
+# This is the cast_"site" functionn for transforming the dataset to required input format
+# As a function, the code block needs to be loaded once for running afterwards
+cast_site <- function(data, site = "missing"){
+  # Here, the package "reshape" is needed for the cast transformation
+  if("reshape" %in% rownames(installed.packages()) == FALSE) {install.packages("reshape")}
+  library(reshape)
+  # Subsetting the dataset to only contain rows of the requested site
+  if (site == "PP"){
+    data_sub <- subset(data, site == "PP")}
+  else
+    if (site == "EBN"){
+      data_sub <- subset(data, site == "EBN")}
+    else
+      {return("Error: Please set site to EBN or PP")}
+  # Transforming the dataset into the described cast-format
+  cast <- cast(aggregate(data_sub$value,
+                       by = list(data_sub$spp, data_sub$date),
+                       FUN = "sum",
+                       na.rm = T),
+                  Group.1 ~ Group.2,
+                  value = "x",
+                  "sum")
+    # Changing the species identification information to the front column and
+    rownames(cast) <- cast$Group.1
+    # deleting the species column inside the table
+    cast <- cast[,-1]
+    return(cast)
+}
+```
+
+```{r main functions, eval=FALSE}
+# The RA4 randomization process as a modification of the
+# RA4 function {EcosimR} to avoid upcoming error messages
+# As a function, the code block needs to be loaded once for running afterwards
+>>>>>>> bb5b83a53ae1751f21e37cb7d0960839297fe9d7
 ra4_mod <- function(speciesData) {
     NonZeroRowShuffle <- function(vec = runif(10)) {
         nonzero <- which(vec > 0)
         shuffledvec <- vec
-        shuffledvec[nonzero] <- vec[sample(nonzero, length(nonzero))] #mod: added length() to avoid error msg
+        shuffledvec[nonzero] <- vec[sample(nonzero, 
+                                           length(nonzero))] #mod: added length() to avoid error msg
         return(shuffledvec)
     }
     #split the dataset into rows which have more than one observation and rows that have only one
@@ -815,7 +743,8 @@ ra4_mod <- function(speciesData) {
     return(RM)
 }
 
-#write_txt function
+# Function for organized automatic saving of our results
+# As a function, the code block needs to be loaded once for running afterwards
 organized_txt <- function(data_spp, method, site){
   if ("pianka" %in% list.files()|"czekanowski" %in% list.files())
     {}
@@ -824,17 +753,24 @@ organized_txt <- function(data_spp, method, site){
       for(i in dir_list){dir.create(i)}}
     colnames(data_spp) <- c("Spp1", "Spp2", (paste("Prob", 1:(ncol(data_spp)-2), sep = "_")))
     write.table(data_spp,
-                file = paste(getwd(), "/", method, "/", site, "/", method,"_", site,"_", Sys.Date(), "_",
-                             format(Sys.time(), "%H-%M"), ".txt", sep=""),
+                file = paste(getwd(), "/", 
+                             method, "/", 
+                             site, "/", 
+                             method,"_", 
+                             site,"_", 
+                             Sys.Date(), "_",
+                             format(Sys.time(), "%H-%M"), 
+                             ".txt", 
+                             sep=""),
                 sep = "\t",
                 row.names = F)
     return(data_spp)
 }
 
-#temporal niche overlap analysis function
+# Temporal niche overlap analysis function
+# This is the main function for the Pianka and Czekanowski niche overlap analyses
+# As a function, the code block needs to be loaded once for running afterwards
 nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, txt = FALSE, site = "missing"){
-  time1 <- Sys.time()
-  print(time1)
   if(site %in% c("PP", "EBN")){
     data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(data), 2))),
                            Spp2 = factor(rep(1, choose(nrow(data), 2))))
@@ -873,17 +809,29 @@ nicheoverlap <- function(data, method = "missing", ra4 = TRUE, iterations = 1, t
     {organized_txt(data_spp, method = method, site = site)}
     } else
     {return("Error: Please set site to EBN or PP")}
-  time2 <- Sys.time()
-  print(time2)
-  print(time2 - time1)
 }
-
-nicheoverlap_EBN_p <- nicheoverlap(cast_EBN_p_prob0.5, method = "pianka", ra4 = F, iterations = 10, txt = T, site = "EBN")
 ```
-########### BRAUCHEN WIR DIES NOCH ? IST OBEN NEU EINGEORDNET ###########
 
+```{r cast_site_prob funtcion, eval=FALSE}
+# get the species of the species pairs that show >=X prob overlap in the observations datasets
+cast_site_prob <- function(data, prob = 0.50, site = "missing"){
+  if(site %in% c("PP", "EBN")){
+    #extracting the species from spp pairs prob >=X prob into single datasets
+    sub_data_1 <- data$Spp1[data$TempOverlapProb >= prob]
+    sub_data_2 <- data$Spp2[data$TempOverlapProb >= prob]
+    #create one dataset with all the species just extracted
+    if(site == "PP")
+    {cast_prob <- cast_PP[rownames(cast_PP) %in% sub_data_1 | rownames(cast_PP) %in% sub_data_2,]
+      return(cast_prob)}
+    else
+    {cast_prob <- cast_EBN[rownames(cast_EBN) %in% sub_data_1 | rownames(cast_EBN) %in% sub_data_2,]
+      return(cast_prob)}}
+  else
+      {return("Error: Please set site to EBN or PP")}
+}
+```
 
-```{r readin_txt function}
+```{r readin_txt function, eval=FALSE}
 #read in the results
 readin_txt <- function(method, site){
   file_list <- list.files(paste(getwd(), "/", 
@@ -913,39 +861,3 @@ readin_txt <- function(method, site){
     return(data)
 }
 ```
-
-```{r power analysis}
-#t-test power analysis
-if("pwr" %in% rownames(installed.packages()) == FALSE) {install.packages("pwr")}
-library(pwr)
-#package pdf: https://cran.r-project.org/web/packages/pwr/pwr.pdf
-```
-
-```{r t-test}
-#t-test
-t.test()
-```
-
-```{r kolmoronov-smirnov/shapiro & wilcoxon}
-#kolmoronov-smirnov
-ks.test()
-
-#shapiro test
-shapiro.test()
-
-#wilcoxon test
-wilcox.test()
-```
-
-
-
-- - - - - - - - - -
-# Results
-
-
-
-- - - - - - - - - -
-# Appendix
-
-
-
