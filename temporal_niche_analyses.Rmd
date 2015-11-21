@@ -632,7 +632,7 @@ tail_probability <- function(observed_overlap, random_overlap){
                                            data[i, 3],
                                            as.character(difference),
                                            signif(p_value, digits = 1),
-                                           unique(data[i, 4:ncol(data)]),
+                                           length(unique(data[i, 4:ncol(data)])),
                                            (ncol(data)-3))
           }
         }
