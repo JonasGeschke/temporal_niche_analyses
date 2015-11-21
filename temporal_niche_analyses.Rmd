@@ -551,11 +551,11 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
           #convert absolute to relative abundance data
           rel_data <- data/rowSums(data)}
       if(subset == FALSE){
-        data_p <- cbind(t(combn(rownames(rel_data), 2)), 0)
-        } 
-        else {data_p <- cbind(subset, 0)}
-      comb <- t(combn(rownames(rel_data)))
-      colnames(comb) <- c("Spp1", "Spp2")
+        data_p <- cbind(t(combn(rownames(rel_data), 2)), 0)}
+        else 
+          {data_p <- cbind(subset, 0)
+          comb <- t(combn(rownames(rel_data)))
+          colnames(comb) <- c("Spp1", "Spp2")}
       row_iterator <- ifelse(subset == FALSE, 1:nrow(data_p),
                              which(complete.cases(merge(comb, subset,
                                             all.x = TRUE, by = c("Spp1", "Spp2")))))
