@@ -603,9 +603,9 @@ tail_probability <- function(observed_overlap, random_overlap){
                               Spp2 = vector(mode = "character"),
                               Overlap = vector(mode = "numeric"),
                               Difference = vector(mode = "character"),
-                              p_value = vector(mode = "numeric"),
-                              unique_values = vector(mode = "numeric"),
-                              randomisation_count = vector(mode = "numeric")
+                              p-value = vector(mode = "numeric"),
+                              No_of_RA4_probabilities = vector(mode = "numeric"),
+                              No_of_RA4_iterations = vector(mode = "numeric"),
                               stringsAsFactors = F)
         # COMMENT
         for(i in 1:nrow(data)){
@@ -615,25 +615,26 @@ tail_probability <- function(observed_overlap, random_overlap){
                                              data[i, 3],
                                              NA, NA, NA, NA)
             }
-          else {lower_dens <- density(as.numeric(data[i, 4:ncol(data)]),
-                                      to = data[i, 3],
-                                      n = 1000)
-          upper_dens <- density(as.numeric(data[i, 4:ncol(data)]),
-                                from = data[i, 3],
-                                n = 1000)
-          lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
-          upper_tail_prob <- with(upper_dens, sum(y * diff(x)[1]))
-          difference <- ifelse(lower_tail_prob > upper_tail_prob,
-                               "lower", "higher")
-          p_value <- ifelse(lower_tail_prob < upper_tail_prob,
-                            lower_tail_prob, upper_tail_prob)
-          results[nrow(results) + 1,] <- c(as.character(data[i, 1]),
-                                           as.character(data[i, 2]),
-                                           data[i, 3],
-                                           as.character(difference),
-                                           signif(p_value, digits = 1),
-                                           length(unique(data[i, 4:ncol(data)])),
-                                           (ncol(data)-3))
+          else
+            {lower_dens <- density(as.numeric(data[i, 4:ncol(data)]),
+                                   to = data[i, 3],
+                                   n = 1000)
+            upper_dens <- density(as.numeric(data[i, 4:ncol(data)]),
+                                  from = data[i, 3],
+                                  n = 1000)
+            lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
+            upper_tail_prob <- with(upper_dens, sum(y * diff(x)[1]))
+            difference <- ifelse(lower_tail_prob > upper_tail_prob,
+                                 "lower", "higher")
+            p_value <- ifelse(lower_tail_prob < upper_tail_prob,
+                              lower_tail_prob, upper_tail_prob)
+            results[nrow(results) + 1,] <- c(as.character(data[i, 1]),
+                                             as.character(data[i, 2]),
+                                             data[i, 3],
+                                             as.character(difference),
+                                             signif(p_value, digits = 1),
+                                             length(unique(c(data[i, 4:ncol(data)]))),
+                                             (ncol(data)-3))
           }
         }
         return(results)
