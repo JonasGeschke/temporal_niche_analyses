@@ -604,6 +604,8 @@ tail_probability <- function(observed_overlap, random_overlap){
                               Overlap = vector(mode = "numeric"),
                               Difference = vector(mode = "character"),
                               p_value = vector(mode = "numeric"),
+                              unique_values = vector(mode = "numeric"),
+                              randomisation_count = vector(mode = "numeric")
                               stringsAsFactors = F)
         # COMMENT
         for(i in 1:nrow(data)){
@@ -611,8 +613,7 @@ tail_probability <- function(observed_overlap, random_overlap){
             results[nrow(results) + 1,] <- c(as.character(data[i, 1]),
                                              as.character(data[i, 2]),
                                              data[i, 3],
-                                             NA,
-                                             NA)
+                                             NA, NA, NA, NA)
             }
           else {lower_dens <- density(as.numeric(data[i, 4:ncol(data)]),
                                       to = data[i, 3],
@@ -630,7 +631,9 @@ tail_probability <- function(observed_overlap, random_overlap){
                                            as.character(data[i, 2]),
                                            data[i, 3],
                                            as.character(difference),
-                                           signif(p_value))
+                                           signif(p_value, digits = 1),
+                                           unique(data[i, 4:ncol(data)]),
+                                           (ncol(data)-3))
           }
         }
         return(results)
