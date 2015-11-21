@@ -802,9 +802,25 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
 }
 ```
 
+
+```{r subsetting function}
+subset <- function(data, percentile = FALSE, prob = FALSE){
+  if(percentile == FALSE & prob != FALSE){
+    subset <- data[data$TempOverlapProb >= prob, c(1, 2)]
+    return(subset)
+  }else{}
+  if(prob == FALSE & percentile != FALSE){
+    subset <- data[data$TempOverlapProb >= quantile(data$TempOverlapProb, percentile), c(1, 2)]
+    return(subset)
+  }else{}
+  if(percentile != FALSE & prob != FALSE){return("Please only give input for either percentile or prob")}
+  else {return("Please set either percentile or prob value")}
+}
+```
+
 ```{r cast_site_prob funtcion, eval=FALSE}
 # get the species of the species pairs that show >=X prob overlap in the observations datasets
-cast_site_prob <- function(data, prob = 0.50, site = "missing"){
+cast_site_prob <- function(data, prob = FALSE, percentile = FALSE, site = "missing"){
   if(site %in% c("PP", "EBN")){
     #extracting the species from spp pairs prob >=X prob into single datasets
     sub_data_1 <- data$Spp1[data$TempOverlapProb >= prob]
