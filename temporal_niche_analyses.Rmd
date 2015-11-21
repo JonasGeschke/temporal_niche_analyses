@@ -596,8 +596,8 @@ Calculating the tail probabilty of the observed niche overlap.
 tail_probability <- function(observed_overlap, random_overlap){
         #right outer join by Spp1 and Spp2
         data <- merge(observed_overlap, random_overlap,
-                      by=c("Spp1","Spp2"),
-                      all.y = TRUE)
+                      by = c("Spp1","Spp2"),
+                      all.x = TRUE)
         #create empty dataframe for results
         results <- data.frame(spp1 = vector(mode="character"),
                               spp2 = vector(mode="character"),
