@@ -599,22 +599,22 @@ tail_probability <- function(observed_overlap, random_overlap){
                       by = c("Spp1","Spp2"),
                       all.x = TRUE)
         #create empty dataframe for results
-        results <- data.frame(spp1 = vector(mode="character"),
-                              spp2 = vector(mode="character"),
-                              overlap = vector(mode="numeric"),
-                              difference = vector(mode="character"),
+        results <- data.frame(Spp1 = vector(mode = "character"),
+                              Spp2 = vector(mode = "character"),
+                              Overlap = vector(mode = "numeric"),
+                              Difference = vector(mode = "character"),
                               p_value = vector(mode = "numeric"))
         # COMMENT
         for(i in 1:nrow(data)){
-          if(is.na(data[i,4])){
+          if(is.na(data[i, 4])){
             results <- rbind(results, c(data[i, 1:3],
                                             NA,
                                             NA))
             }
-             else {lower_dens <- density(data[i,4:ncol(data)],
+             else {lower_dens <- density(data[[i, 4:ncol(data)]],
                                          to = data[i, 3],
                                          n = 1000000)
-             upper_dens <- density(data[i,4:ncol(data)],
+             upper_dens <- density(data[i, 4:ncol(data)],
                                    from = data[i, 3],
                                    n = 1000000)
              lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
@@ -765,7 +765,7 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
       colnames(comb) <- c("Spp1", "Spp2")
       row_iterator <- ifelse(subset == FALSE, 1:nrow(data_p),
                              which(complete.cases(merge(comb, subset,
-                                            all.x = TRUE, by = ("Spp1", "Spp2"))))
+                                            all.x = TRUE, by = c("Spp1", "Spp2")))))
       if(method == "pianka"){
         # Pianka
         for (i in row_iterator){
