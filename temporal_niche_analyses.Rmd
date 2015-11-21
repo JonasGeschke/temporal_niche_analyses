@@ -603,12 +603,13 @@ tail_probability <- function(observed_overlap, random_overlap){
                               Spp2 = vector(mode = "character"),
                               Overlap = vector(mode = "numeric"),
                               Difference = vector(mode = "character"),
-                              p_value = vector(mode = "numeric"))
+                              p_value = vector(mode = "numeric"),
+                              stringsAsFactors = F)
         # COMMENT
         for(i in 1:nrow(data)){
           if(is.na(data[i, 4])){
-            results[nrow(results) + 1,] <- c(as.factor(data[i, 1]),
-                                             as.factor(data[i, 2]),
+            results[nrow(results) + 1,] <- c(as.character(data[i, 1]),
+                                             as.character(data[i, 2]),
                                              data[i, 3],
                                              NA,
                                              NA)
@@ -625,10 +626,10 @@ tail_probability <- function(observed_overlap, random_overlap){
                                "lower", "higher")
           p_value <- ifelse(lower_tail_prob < upper_tail_prob,
                             lower_tail_prob, upper_tail_prob)
-          results[nrow(results) + 1,] <- c(as.factor(data[i, 1]),
-                                           as.factor(data[i, 2]),
+          results[nrow(results) + 1,] <- c(as.character(data[i, 1]),
+                                           as.character(data[i, 2]),
                                            data[i, 3],
-                                           difference,
+                                           as.character(difference),
                                            signif(p_value))
           }
         }
