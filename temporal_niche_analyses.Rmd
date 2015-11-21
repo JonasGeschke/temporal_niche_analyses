@@ -603,7 +603,7 @@ tail_probability <- function(observed_overlap, random_overlap){
                               Spp2 = vector(mode = "character"),
                               Overlap = vector(mode = "numeric"),
                               Difference = vector(mode = "character"),
-                              p-value = vector(mode = "numeric"),
+                              p_value = vector(mode = "numeric"),
                               No_of_RA4_probabilities = vector(mode = "numeric"),
                               No_of_RA4_iterations = vector(mode = "numeric"),
                               stringsAsFactors = F)
