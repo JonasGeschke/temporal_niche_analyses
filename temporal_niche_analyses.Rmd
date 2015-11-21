@@ -31,8 +31,8 @@ The main analysis approach comes from the paper "Temporal Overlap and Co-Occurre
 4. ROSARIO: works with looping time periods (one year, one day) => we dont have proper data => WORKS NO
 5. RA3: null-model approach, which randomized also the null values => transforms our data into pseudo-data => WORKS NO
 6. RA4: null-model apporach, which fixes null values and randomizes the others => WORKS YES
-7. run XXX RA4 randomized datasheets for Pianka/Czekanowski analysis as null-model approach of our temporal overlap apporach
-8. tail probability test
+7. Run XXX RA4 randomized datasheets for Pianka/Czekanowski analysis as null-model approach of our temporal overlap apporach
+8. Tail probability analysis
 
 
 The data used in our analyses come from the long-term monitoring trapping of the Chair of Forest Zoology and Entomology, University of Freiburg, and was undertaken by several staff members and student assistants.
@@ -52,8 +52,7 @@ The data used in our analyses come from the long-term monitoring trapping of the
     => RA4_nicheoverlap function, ra4 = TRUE, txt = TRUE, input: results of 4
 6. Merge results, if needed
     => readin function, input: results of 5
-7. Run of power analysis for t-test
-8. t-test
+7. Tail probability analysis
 
 
 
@@ -67,21 +66,19 @@ To start the whole working process with the monitoring data and finally the stat
 ```{r packages, message=FALSE}
 # Setting the working directory
 # You might want to change the PFAD to your prefered saving location
-setwd("C:/RFiles/temporal niche analysis")
+setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
 
 # Installing  required packages, if they are not installed yet
 if("devtools" %in% rownames(installed.packages())  == FALSE) {install.packages("devtools")}
 if("lubridate" %in% rownames(installed.packages())  == FALSE) {install.packages("lubridate")}
 if("ggplot2" %in% rownames(installed.packages())    == FALSE) {install.packages("ggplot2")}
 if("reshape" %in% rownames(installed.packages())    == FALSE) {install.packages("reshape")}
-if("pwr" %in% rownames(installed.packages())        == FALSE) {install.packages("pwr")}
 
 # Loading the packages for the skript to work
 library(devtools)
 library(lubridate)
 library(ggplot2)
 library(reshape)
-library(pwr)
 
 # Installing and loading our own NicheOverlapR packages, containing all functions needed for running this skript
 install_github("NicheOverlapR", "JonasGeschke")
@@ -133,6 +130,7 @@ names(Gdata)
 
 # Deleting the datapoints/rows, where no trust level is specified (= NA)
 Gdata <- subset(Gdata, Gdata$trust != "NA")
+Gdata <- Gdata[!is.na(Gdata$trust),]
 Gdata <- droplevels(Gdata)
 summary(Gdata)
 
@@ -297,68 +295,9 @@ overview_plot
 
 ## Transforming the data for further analyses
 
-########### BRAUCHEN WIR DIES NOCH ?###########
-Subsetting function bases
-```{r, eval=FALSE}
-# dataset_split <- function(data, light = FALSE, site = FALSE, trap = FALSE, month_start = "01", month_end = "12"){}
-
-# sex_rowsplit <- function(data){}
-
-# column_split <- function(data, light = FALSE, base_interval = "days"){}
-```
-```{r, eval=FALSE}
-# subsetting(Gdata2, trap = "L", month_start = "05", month_end = "11")
-```
-########### BRAUCHEN WIR DIES NOCH ?###########
-
-
 For the final analyses of the dataset regarding temporal niche and cooccurrence interactions within the Arctiinae in EBN and PP, we need to transform the dataset.
 Currently, the dataset consists out of a table with each row representing one trapped specimen. With the function `cast_site`, we transfer this table into each one new dataset per site, where each row represents not one specimen but one species and each column contains the presence information (1=yes, 0=no) for one trapping date.
 Those datasets will be the input for the Pianka and Czekanowski analyses, two different niche overlap indices.
-
-########### BRAUCHEN WIR DIES NOCH ?###########
-`cast_EBN`
-```{r, results='hide'}
-# Creating a subset, which only contains data from EBN
-Gdata_EBN <- subset(Gdata, site == "EBN")
-
-# Creating a table in which we have relative values lateron
-# For now using the Gdata_EBN dataset only
-# Here, the package "reshape" is needed
-cast_EBN <- cast(aggregate(Gdata_EBN$value,
-                       by = list(Gdata_EBN$spp, Gdata_EBN$date),
-                       FUN = "sum",
-                       na.rm = T),
-                  Group.1 ~ Group.2,
-                  value = "x",
-                  "sum")
-
-# Changing the species to front column and deleting the species column
-rownames(cast_EBN) <- cast_EBN$Group.1
-cast_EBN <- cast_EBN[,-1]
-```
-`cast_PP`
-```{r, results='hide'}
-# Creating a subset, which only contains data from PP
-Gdata_PP <- subset(Gdata, site == "PP")
-
-# Creating a table in which we have relative values lateron
-# For now using the Gdata_PP dataset only
-# Here, the package "reshape" is needed
-cast_PP <- cast(aggregate(Gdata_PP$value,
-                       by = list(Gdata_PP$spp, Gdata_PP$date),
-                       FUN = "sum",
-                       na.rm = T),
-                  Group.1 ~ Group.2,
-                  value = "x",
-                  "sum")
-
-# Changing the species to front column and deleting the species column
-rownames(cast_PP) <- cast_PP$Group.1
-cast_PP <- cast_PP[,-1]
-```
-########### BRAUCHEN WIR DIES NOCH ?###########
-
 
 Now we can run the `cast_site` function contained in our NicheOverlapR package installed from Github and get one `cast_EBN` and one `cast_PP` dataset for further niche overlap analyses.
 
@@ -386,98 +325,6 @@ EBN_c <- nicheoverlap(cast_EBN, method = "czekanowski", ra4 = FALSE, site = "EBN
 PP_p <- nicheoverlap(cast_PP, method = "pianka", ra4 = FALSE, site = "PP")
 PP_c <- nicheoverlap(cast_PP, method = "czekanowski", ra4 = FALSE, site = "PP")
 ```
-
-########### BRAUCHEN WIR DIES NOCH ?###########
-For EBN.
-```{r, results='hide'}
-# Pianka and Czekanowski analysis for EBN
-
-# Setting the input data
-EBN <- cast_EBN/rowSums(cast_EBN)
-
-# Pianka
-EBN_P <- cbind(t(combn(rownames(EBN), 2)), 0)
-    for (i in 1:nrow(EBN_P)) EBN_P[i, 3] <- sum(EBN[EBN_P[i, 
-        1], ] * EBN[EBN_P[i, 2], ])/sqrt(sum(EBN[EBN_P[i, 1], 
-        ]^2) * sum(EBN[EBN_P[i, 2], ]^2))
-# Renaming columns
-colnames(EBN_P) <- c("Spp1", "Spp2", "TempOverlapProb")
-
-# Czekanowski
-EBN_C <- cbind(t(combn(rownames(EBN), 2)), 0)
-    for (i in 1:nrow(EBN_C)) EBN_C[i, 3] <- 1 - 0.5 * sum(abs((EBN[EBN_C[i, 
-        1], ] - EBN[EBN_C[i, 2], ])))
-# Renaming columns
-colnames(EBN_C) <- c("Spp1", "Spp2", "TempOverlapProb")
-
-# Creating an overview plot on the results
-plot(EBN_P[,3], EBN_C[,3],
-     main = "Niche Overlap Probabilities in EBN (2007-2015)",
-     xlab =  "Pianka",
-     ylab = "Czekanowski",
-     pch = 3)
-  mtext("(Each cross symbolizes one pair of species)")
-  
-# Setting target folder (Dropbox) as working directory
-setwd("~/Dropbox/Co-occurrence/Results/Tables")
-
-# Save results as tables
-write.table(EBN_P, file = "nicheoverlap_observations_EBN_pianka.txt",
-            sep = "\t",
-            row.names = F)
-write.table(EBN_C, file = "nicheoverlap_observations_EBN_czekanowski.txt",
-            sep = "\t",
-            row.names = F)
-
-# Re-setting to process working directory
-setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
-```
-For PP.
-```{r, results='hide'}
-# Pianka and Czekanowski analysis for PP
-
-# Setting the input data
-PP <- cast_PP/rowSums(cast_PP)
-
-# Pianka
-PP_P <- cbind(t(combn(rownames(PP), 2)), 0)
-    for (i in 1:nrow(PP_P)) PP_P[i, 3] <- sum(PP[PP_P[i, 
-        1], ] * PP[PP_P[i, 2], ])/sqrt(sum(PP[PP_P[i, 1], 
-        ]^2) * sum(PP[PP_P[i, 2], ]^2))
-# Renaming columns
-colnames(PP_P) <- c("Spp1", "Spp2", "TempOverlapProb")
-
-# Czekanowski
-PP_C <- cbind(t(combn(rownames(PP), 2)), 0)
-    for (i in 1:nrow(PP_C)) PP_C[i, 3] <- 1 - 0.5 * sum(abs((PP[PP_C[i, 
-        1], ] - PP[PP_C[i, 2], ])))
-# Renaming columns
-colnames(PP_C) <- c("Spp1", "Spp2", "TempOverlapProb")
-
-# Creating an overview plot on the results
-plot(PP_P[,3], PP_C[,3],
-     main = "Niche Overlap Probabilities in Peru Panguana (2010/2013/2015)",
-     xlab =  "Pianka",
-     ylab = "Czekanowski",
-     pch = 3)
-  mtext("(Each cross symbolizes one pair of species)")
-  
-# Setting target folder (Dropbox) as working directory
-setwd("~/Dropbox/Co-occurrence/Results/Tables")
-
-# Save results as tables
-write.table(PP_P, file = "nicheoverlap_observations_PP_pianka.txt",
-            sep = "\t",
-            row.names = F)
-write.table(PP_C, file = "nicheoverlap_observations_PP_czekanowski.txt",
-            sep = "\t",
-            row.names = F)
-
-# Re-setting to process working directory
-setwd("~/Studium/MSc/3. Semester/Temporal_niche_analyses/Git")
-```
-########### BRAUCHEN WIR DIES NOCH ?###########
-
 
 As running the niche overlap analyses with the observed data needs quite some time, you can read the results with the following code block.
 
@@ -544,26 +391,6 @@ plot(PP_p[,3], PP_c[,3],
 ```
 
 
-########### BRAUCHEN WIR DIES NOCH ?###########
-```{r}
-# get the species of the species pairs that show >= 0.75 overlap indicated by pianka index
-#quant_PP_P <- quantile(PP_P$TempOverlapProb, 0.995)
-spec5_PP_P1 <- PP_P$Spp1[PP_P$TempOverlapProb>=0.75]
-spec5_PP_P2 <- PP_P$Spp2[PP_P$TempOverlapProb>=0.75]
-
-#subset GData_PP to only include the species that are among the species pair that show the 5% highest niche overlap
-
-## subset Gdata_PP
-cast_PP_75 <- cast_PP[rownames(cast_PP) %in% spec5_PP_P1 | rownames(cast_PP) %in% spec5_PP_P2,]
-
-## compare the amount of species in the raw and the subsetted dataset
-nrow(cast_PP)
-nrow(cast_PP_75)
-nrow(cast_PP_75)/nrow(cast_PP)*100 #percentage of species remaining
-choose(nrow(cast_PP_75),2)/choose(nrow(cast_PP),2)*100 #percentage of combinations remaining
-```
-########### BRAUCHEN WIR DIES NOCH ?###########
-
 Input data for RA4 analyses:
 
 ```{r run cast_site_prob}
@@ -582,65 +409,22 @@ nrow(cast_EBN_p_prob0.5)/nrow(cast_EBN)*100 #percentage of species remaining
 choose(nrow(cast_EBN_p_prob0.5),2)/choose(nrow(cast_EBN),2)*100 #percentage of combinations remaining
 ```
 
+Subsetting by species pair:
+```{r run subset_spppairs}
+EBN_subset_perc95 <- subset_spppairs(EBN_p, percentile = 0.95)
+```
+
+
 
 Running the nicheoverlap funtion as main RA4 analyses:
 
 ```{r run ra4 nicheoverlap analyses}
-nicheoverlap(cast_PP_p_prob0.75, method = "pianka", iterations = 8, txt = T, site = "PP")
+functiontest <- nicheoverlap(cast_EBN_p_prob0.5, method = "pianka", iterations = 2, txt = F, site = "EBN")
+result_EBN_p_perc95 <- nicheoverlap(cast_EBN, EBN_subset_perc95, method = "pianka", iterations = 2, site = "EBN")
 ```
 
 
 Calculating the tail probabilty of the observed niche overlap.
-
-```{r tail_probability function, eval=FALSE}
-tail_probability <- function(observed_overlap, random_overlap){
-        #right outer join by Spp1 and Spp2
-        data <- merge(observed_overlap, random_overlap,
-                      by = c("Spp1","Spp2"),
-                      all.x = TRUE)
-        #create empty dataframe for results
-        results <- data.frame(Spp1 = vector(mode = "character"),
-                              Spp2 = vector(mode = "character"),
-                              Overlap = vector(mode = "numeric"),
-                              Difference = vector(mode = "character"),
-                              p_value = vector(mode = "numeric"),
-                              No_of_RA4_probabilities = vector(mode = "numeric"),
-                              No_of_RA4_iterations = vector(mode = "numeric"),
-                              stringsAsFactors = F)
-        # COMMENT
-        for(i in 1:nrow(data)){
-          if(is.na(data[i, 4])){
-            results[nrow(results) + 1,] <- c(as.character(data[i, 1]),
-                                             as.character(data[i, 2]),
-                                             data[i, 3],
-                                             NA, NA, NA, NA)
-            }
-          else
-            {lower_dens <- density(as.numeric(data[i, 4:ncol(data)]),
-                                   to = data[i, 3],
-                                   n = 1000)
-            upper_dens <- density(as.numeric(data[i, 4:ncol(data)]),
-                                  from = data[i, 3],
-                                  n = 1000)
-            lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
-            upper_tail_prob <- with(upper_dens, sum(y * diff(x)[1]))
-            difference <- ifelse(lower_tail_prob > upper_tail_prob,
-                                 "lower", "higher")
-            p_value <- ifelse(lower_tail_prob < upper_tail_prob,
-                              lower_tail_prob, upper_tail_prob)
-            results[nrow(results) + 1,] <- c(as.character(data[i, 1]),
-                                             as.character(data[i, 2]),
-                                             data[i, 3],
-                                             as.character(difference),
-                                             signif(p_value, digits = 1),
-                                             length(unique(c(data[i, 4:ncol(data)]))),
-                                             (ncol(data)-3))
-          }
-        }
-        return(results)
-}
-```
-
 
 ```{r tail probaility explanation}
 #create some randomly distributed data
@@ -704,7 +488,7 @@ cast_site <- function(data, site = "missing"){
 }
 ```
 
-```{r main functions, eval=FALSE}
+```{r main niche overlap function, eval=FALSE}
 # The RA4 randomization process as a modification of the
 # RA4 function {EcosimR} to avoid upcoming error messages
 # As a function, the code block needs to be loaded once for running afterwards
@@ -802,9 +586,8 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
 }
 ```
 
-
-```{r subsetting function}
-subset <- function(data, percentile = FALSE, prob = FALSE){
+```{r subset_spppairs function}
+subset_spppairs <- function(data, percentile = FALSE, prob = FALSE){
   if(percentile == FALSE & prob != FALSE){
     subset <- data[data$TempOverlapProb >= prob, c(1, 2)]
     return(subset)
@@ -865,5 +648,54 @@ readin_txt <- function(method, site){
   colnames(data) <- c("Spp1", "Spp2", 
                       (paste("Prob", 1:(ncol(data)-2), sep = "_")))
     return(data)
+}
+```
+
+```{r tail_probability function, eval=FALSE}
+tail_probability <- function(observed_overlap, random_overlap){
+        #right outer join by Spp1 and Spp2
+        data <- merge(observed_overlap, random_overlap,
+                      by = c("Spp1","Spp2"),
+                      all.x = TRUE)
+        #create empty dataframe for results
+        results <- data.frame(Spp1 = vector(mode = "character"),
+                              Spp2 = vector(mode = "character"),
+                              Overlap = vector(mode = "numeric"),
+                              Difference = vector(mode = "character"),
+                              p_value = vector(mode = "numeric"),
+                              No_of_RA4_probabilities = vector(mode = "numeric"),
+                              No_of_RA4_iterations = vector(mode = "numeric"),
+                              stringsAsFactors = F)
+        # COMMENT
+        for(i in 1:nrow(data)){
+          if(is.na(data[i, 4])){
+            results[nrow(results) + 1,] <- c(as.character(data[i, 1]),
+                                             as.character(data[i, 2]),
+                                             data[i, 3],
+                                             NA, NA, NA, NA)
+            }
+          else
+            {lower_dens <- density(as.numeric(data[i, 4:ncol(data)]),
+                                   to = data[i, 3],
+                                   n = 1000)
+            upper_dens <- density(as.numeric(data[i, 4:ncol(data)]),
+                                  from = data[i, 3],
+                                  n = 1000)
+            lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
+            upper_tail_prob <- with(upper_dens, sum(y * diff(x)[1]))
+            difference <- ifelse(lower_tail_prob > upper_tail_prob,
+                                 "lower", "higher")
+            p_value <- ifelse(lower_tail_prob < upper_tail_prob,
+                              lower_tail_prob, upper_tail_prob)
+            results[nrow(results) + 1,] <- c(as.character(data[i, 1]),
+                                             as.character(data[i, 2]),
+                                             data[i, 3],
+                                             as.character(difference),
+                                             signif(p_value, digits = 1),
+                                             length(unique(c(data[i, 4:ncol(data)]))),
+                                             (ncol(data)-3))
+          }
+        }
+        return(results)
 }
 ```
