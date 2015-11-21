@@ -606,21 +606,27 @@ tail_probability <- function(observed_overlap, random_overlap){
                               p_value = vector(mode = "numeric"))
         #
         for(i in 1:nrow(data)){
-                lower_dens <- density(data[i,4:ncol(data)],
-                                      to = data[i, 3],
-                                      n = 1000000)
-                upper_dens <- density(data[i,4:ncol(data)],
-                                      from = data[i, 3],
-                                      n = 1000000)
-                lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
-                upper_tail_prob <- with(upper_dens, sum(y * diff(x)[1]))
-                difference <- ifelse(lower_tail_prob > upper_tail_prob,
-                                     "lower", "higher")
+          if(is.na(data[i,4]){
+            results <- rbind(results, c(data[i, 1:3],
+                                            NA,
+                                            NA))
+          }
+             else {lower_dens <- density(data[i,4:ncol(data)],
+                                         to = data[i, 3],
+                                         n = 1000000)
+             upper_dens <- density(data[i,4:ncol(data)],
+                                   from = data[i, 3],
+                                   n = 1000000)
+             lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
+             upper_tail_prob <- with(upper_dens, sum(y * diff(x)[1]))
+             difference <- ifelse(lower_tail_prob > upper_tail_prob,
+                                  "lower", "higher")
                 p_value <- ifelse(lower_tail_prob > upper_tail_prob,
                                   lower_tail_prob, upper_tail_prob)
                 results <- rbind(results, c(data[i, 1:3],
                                             difference,
                                             p_value))
+             }
         }
         return(results)
 }
