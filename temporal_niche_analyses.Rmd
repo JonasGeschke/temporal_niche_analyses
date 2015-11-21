@@ -589,8 +589,9 @@ Running the nicheoverlap funtion as main RA4 analyses:
 nicheoverlap(cast_PP_p_prob0.75, method = "pianka", iterations = 8, txt = T, site = "PP")
 ```
 
-<<<<<<< HEAD
+
 Calculating the tail probabilty of the observed niche overlap.
+
 ```{r}
 tail_probability <- function(observed_overlap, random_overlap){
         #right outer join by Spp1 and Spp2
@@ -603,7 +604,7 @@ tail_probability <- function(observed_overlap, random_overlap){
                               overlap = vector(mode="numeric"),
                               difference = vector(mode="character"),
                               p_value = vector(mode = "numeric"))
-        
+        #
         for(i in 1:nrow(data)){
                 lower_dens <- density(data[i,4:ncol(data)],
                                       to = data[i, 3],
@@ -613,10 +614,10 @@ tail_probability <- function(observed_overlap, random_overlap){
                                       n = 1000000)
                 lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
                 upper_tail_prob <- with(upper_dens, sum(y * diff(x)[1]))
-                p_value <- ifelse(lower_tail_prob > upper_tail_prob,
-                                  lower_tail_prob, upper_tail_prob)
                 difference <- ifelse(lower_tail_prob > upper_tail_prob,
                                      "lower", "higher")
+                p_value <- ifelse(lower_tail_prob > upper_tail_prob,
+                                  lower_tail_prob, upper_tail_prob)
                 results <- rbind(results, c(data[i, 1:3],
                                             difference,
                                             p_value))
@@ -638,59 +639,15 @@ lines(dens <- density(x))
 lines(dens <- density(x, bw = "SJ"), col = "blue" )
 
 dens
-lines( dens2 <- density(x, from = 1, n = 100000),
+lines( dens2 <- density(x, from = 1, n = 1000000),
        col="red", lwd = 2)
-lines( dens3 <- density(x, to = 1, n = 100000),
+lines( dens3 <- density(x, to = 1, n = 1000000),
        col="blue", lwd = 2)
 str(dens2)
 #calculate the sum of the products of y-values and the x
 with(dens2, sum(y * diff(x)[1]))+ with(dens3, sum(y * diff(x)[1]))
-
-
 ```
 
-
-########### BRAUCHEN WIR DIES NOCH ? IST OBEN NEU EINGEORDNET ###########
-```{r}
-#ra4 randomization
-#modification of ra4 function {EcosimR} to avoid error msg
-=======
-
-```{r tail probability analysis}
-Calculating the tail probabilty of the observed niche overlap.
-
-tail_probability <- function(observed_overlap, random_overlap){
-        #right outer join by Spp1 and Spp2
-        data <- merge(observed_overlap, random_overlap,
-                      by=c("Spp1","Spp2"),
-                      all.y = TRUE)
-        #create empty dataframe for results
-        results <- data.frame(spp1 = vector(mode="character"),
-                              spp2 = vector(mode="character"),
-                              overlap = vector(mode="numeric"),
-                              difference = vector(mode="character"),
-                              p_value = vector(mode = "numeric"))
-
-        for(i in 1:nrow(data)){
-                lower_dens <- density(data[i,4:ncol(data)],
-                                      to = data[i, 3],
-                                      n = 1000000)
-                upper_dens <- density(data[i,4:ncol(data)],
-                                      from = data[i, 3],
-                                      n = 1000000)
-                lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
-                upper_tail_prob <- with(upper_dens, sum(y * diff(x)[1]))
-                p_value <- ifelse(lower_tail_prob > upper_tail_prob,
-                                  lower_tail_prob, upper_tail_prob)
-                difference <- ifelse(lower_tail_prob > upper_tail_prob,
-                                     "lower", "higher")
-                results <- rbind(results, c(data[i, 1:3],
-                                            difference,
-                                            p_value))
-        }
-        return(results)
-}
-```
 
 
 
@@ -737,7 +694,6 @@ cast_site <- function(data, site = "missing"){
 # The RA4 randomization process as a modification of the
 # RA4 function {EcosimR} to avoid upcoming error messages
 # As a function, the code block needs to be loaded once for running afterwards
->>>>>>> bb5b83a53ae1751f21e37cb7d0960839297fe9d7
 ra4_mod <- function(speciesData) {
     NonZeroRowShuffle <- function(vec = runif(10)) {
         nonzero <- which(vec > 0)
