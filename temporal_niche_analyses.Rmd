@@ -420,39 +420,26 @@ EBN_c_subset_perc95 <- subset_spppairs(EBN_c, percentile = 0.95)
 Running the nicheoverlap funtion as main RA4 analyses:
 
 ```{r run ra4 nicheoverlap analyses}
-functiontest <- nicheoverlap(cast_EBN_p_prob0.5, method = "pianka", iterations = 2, txt = F, site = "EBN")
-result_EBN_p_perc95_998 <- nicheoverlap(cast_EBN, EBN_p_subset_perc95, method = "pianka", iterations = 2, site = "EBN")
-result_EBN_c_perc95_998 <- nicheoverlap(cast_EBN, EBN_c_subset_perc95, method = "czekanowski", iterations = 2, site = "PP")
+RA4result_EBN_p_perc95 <- nicheoverlap(cast_EBN, EBN_p_subset_perc95, method = "pianka", iterations = 5, site = "EBN")
+RA4result_EBN_c_perc95 <- nicheoverlap(cast_EBN, EBN_c_subset_perc95, method = "czekanowski", iterations = 2, site = "PP")
 ```
+
 
 
 Calculating the tail probabilty of the observed niche overlap.
+
 ```{r run tail_probability}
-final_outcome_EBN_p <- tail_probability("EBN_p", "result_EBN_p_perc95")
+final_outcome_EBN_p <- tail_probability(EBN_p, result_EBN_p_perc95)
 ```
 
 
 
-```{r tail probaility explanation}
-#create some randomly distributed data
-set.seed(1)
-x <-rnorm(1000)
-#draw a histogramm of the data
-hist(x,freq=FALSE)
-#compute gaussian kernel density estimates and draw it as a line in the histogramm. kernel bandwidth = 
-lines(dens <- density(x))
-lines(dens <- density(x, bw = "SJ"), col = "blue" )
+Creating a nullmodel-overlap histogram with density line as tail probability explanation:
 
-dens
-lines( dens2 <- density(x, from = 1, n = 1000000),
-       col="red", lwd = 2)
-lines( dens3 <- density(x, to = 1, n = 1000000),
-       col="blue", lwd = 2)
-str(dens2)
-#calculate the sum of the products of y-values and the x
-with(dens2, sum(y * diff(x)[1]))+ with(dens3, sum(y * diff(x)[1]))
+```{r run density_hist}
+hist_EBN_p <- density_hist(EBN_p, result_EBN_p_perc95, spp1 = "8068", spp2 = "9043", breaks = 10)
+hist_EBN_p_sign <- density_hist(EBN_p, result_EBN_p_perc95, spp1 = "8195", spp2 = "8106", breaks = 10)
 ```
-
 
 
 
@@ -549,8 +536,8 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
   if(site %in% c("PP", "EBN")){
     data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(data), 2))),
                            Spp2 = factor(rep(1, choose(nrow(data), 2))))
-    subset_paste <- apply(subset, 1, function(x) paste(x[1], x[2], sep ="_"))
-    subset_paste <- append(subset_paste, apply(subset, 1, function(x) paste(x[2], x[1], sep ="_")))
+    subset_paste <- apply(subset, 1, function(x) paste(x[1], x[2], sep = "_"))
+    subset_paste <- append(subset_paste, apply(subset, 1, function(x) paste(x[2], x[1], sep = "_")))
     repeat{
       if(ra4 == TRUE){
         #ra4 randomization
@@ -562,7 +549,7 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
           rel_data <- data/rowSums(data)
           }
       comb <- t(combn(rownames(rel_data), 2))
-      data_p <- cbind(comb, 998)
+      data_p <- cbind(comb, NA)
       if(method == "pianka"){
         # Pianka
         for (i in 1:nrow(data_p)){
@@ -581,15 +568,16 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
       else
       {return("Error: Please set method as pianka or czekanowski")}
       data_spp[,c(1,2)] <- data_p[,c(1,2)]
-      data_spp <- data.frame(data_spp, data_p[,3])
+      data_spp <- cbind(data_spp, as.numeric(data_p[,3]))
       if (ncol(data_spp)-2 == iterations[1]){break}
     }
     # organized_txt was cut here
-    if(txt == FALSE)
-    {return(data_spp)}
+    if(txt == FALSE){
+      return(data_spp)}
     else
     {organized_txt(data_spp, method = method, site = site)}
-    } else
+    }
+  else
     {return("Error: Please set site to EBN or PP")}
 }
 ```
@@ -661,51 +649,104 @@ readin_txt <- function(method, site){
 
 ```{r tail_probability function, eval=FALSE}
 tail_probability <- function(observed_overlap, random_overlap){
-        #right outer join by Spp1 and Spp2
-        data <- merge(observed_overlap, random_overlap,
-                      by = c("Spp1","Spp2"),
-                      all.x = TRUE)
-        #create empty dataframe for results
-        results <- data.frame(Spp1 = vector(mode = "character"),
-                              Spp2 = vector(mode = "character"),
-                              Overlap = vector(mode = "numeric"),
-                              Difference = vector(mode = "character"),
-                              p_value = vector(mode = "numeric"),
-                              No_of_RA4_probabilities = vector(mode = "numeric"),
-                              No_of_RA4_iterations = vector(mode = "numeric"),
-                              Percentage_of_analysed_species_pairs = vector(mode = "numeric"),
-                              stringsAsFactors = F)
-        # COMMENT
-        for(i in 1:nrow(data)){
-          if(is.na(data[i, 4])){
-            results[nrow(results) + 1,] <- c(as.character(data[i, 1]),
-                                             as.character(data[i, 2]),
-                                             data[i, 3],
-                                             NA, NA, NA, NA)
-            }
-          else
-            {lower_dens <- density(as.numeric(data[i, 4:ncol(data)]),
-                                   to = data[i, 3],
-                                   n = 1000)
-            upper_dens <- density(as.numeric(data[i, 4:ncol(data)]),
-                                  from = data[i, 3],
-                                  n = 1000)
-            lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
-            upper_tail_prob <- with(upper_dens, sum(y * diff(x)[1]))
-            difference <- ifelse(lower_tail_prob > upper_tail_prob,
-                                 "lower", "higher")
-            p_value <- ifelse(lower_tail_prob < upper_tail_prob,
-                              lower_tail_prob, upper_tail_prob)
-            results[nrow(results) + 1,] <- c(as.character(data[i, 1]),
-                                             as.character(data[i, 2]),
-                                             data[i, 3],
-                                             as.character(difference),
-                                             signif(p_value, digits = 1),
-                                             length(unique(c(data[i, 4:ncol(data)]))),
-                                             (ncol(data)-3),
-                                             sum(!is.na(data[, 4]))/nrow(data)*100)
-          }
-        }
-        return(results)
+  # create empty dataframe for results
+  results <- data.frame(Spp1 = vector(mode = "character"),
+                        Spp2 = vector(mode = "character"),
+                        Observed_Overlap = vector(mode = "numeric"),
+                        Difference = vector(mode = "character"),
+                        p_value = vector(mode = "numeric"),
+                        No_of_RA4_probabilities = vector(mode = "numeric"),
+                        No_of_RA4_iterations = vector(mode = "numeric"),
+                        Percentage_of_analysed_species_pairs = vector(mode = "numeric"),
+                        stringsAsFactors = F)
+  # COMMENT
+  observed_paste1 <- apply(observed_overlap, 1, function(x) paste(x[1], x[2], sep = "_"))
+  observed_paste2 <- apply(observed_overlap, 1, function(x) paste(x[2], x[1], sep = "_"))
+  random_paste <- apply(random_overlap, 1, function(x) paste(x[1], x[2], sep = "_"))
+  for(i in 1:nrow(random_overlap)){
+    if(is.na(random_overlap[i, 3])){
+      results[nrow(results) + 1,] <- c(as.character(random_overlap[i, 1]),
+                                       as.character(random_overlap[i, 2]),
+                                       random_overlap[i, 3],
+                                       NA, NA, NA, NA, NA)}
+    else
+      {
+      # COMMENT
+      row_no <- which(observed_paste1 == random_paste[i] | observed_paste2 == random_paste[i])
+      # calculate output variables
+      lower_dens <- density(unlist(random_overlap[i, 3:ncol(random_overlap)]),
+                            to = observed_overlap[row_no, 3],
+                            n = 1000)
+      upper_dens <- density(unlist(random_overlap[i, 3:ncol(random_overlap)]),
+                            from = observed_overlap[row_no, 3],
+                            n = 1000)
+      lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
+      upper_tail_prob <- with(upper_dens, sum(y * diff(x)[1]))
+      difference <- ifelse(lower_tail_prob < upper_tail_prob,
+                           "lower", "higher")
+      p_value <- ifelse(lower_tail_prob < upper_tail_prob,
+                        lower_tail_prob, upper_tail_prob)
+      # paste output variables in output table
+      results[nrow(results) + 1,] <- c(as.character(random_overlap[i, 1]),
+                                       as.character(random_overlap[i, 2]),
+                                       round(observed_overlap[row_no[1], 3], digits = 3),
+                                       as.character(difference),
+                                       signif(p_value, digits = 3),
+                                       length(unique(c(random_overlap[i, 3:ncol(random_overlap)]))),
+                                       (ncol(random_overlap)-2),
+                                       round(sum(!is.na(random_overlap[, 4]))/nrow(random_overlap)*100,
+                                             digits = 3))
+      }
+    }
+  return(results)
+}
+```
+
+```{r tail probability histogram per spppair}
+# histogram input: spp1 und spp2
+density_hist <- function(observed_overlap, random_overlap, spp1 = "xxxx", spp2 = "yyyy", breaks = 20){
+  # COMMENT
+  rand_paste <- apply(random_overlap, 1, function(x) paste(x[1], x[2], sep = "_"))
+  obs_paste <- apply(observed_overlap, 1, function(x) paste(x[1], x[2], sep = "_"))
+  spp_paste <- c(paste(spp1, spp2, sep = "_"), paste(spp2, spp1, sep = "_"))
+  row_no_rand <- which(rand_paste == spp_paste[1] | rand_paste == spp_paste[2])
+  row_no_obs <- which(obs_paste == spp_paste[1] | obs_paste == spp_paste[2])
+  # histogram
+  hist(unlist(random_overlap[row_no_rand, 4:ncol(random_overlap)]),
+       breaks = breaks,
+       xlim = c(min(unlist(random_overlap[row_no_rand, 3:ncol(random_overlap)])) - 0.1,
+                           max(unlist(random_overlap[row_no_rand, 3:ncol(random_overlap)])) + 0.1),
+       xlab = "Niche overlap",
+       main = paste("Niche overlap probability for spp", spp1, "and spp", spp2,
+             sep = " "))
+  # density functions
+  lines(upper_dens <- density(unlist(random_overlap[row_no_rand, 3:ncol(random_overlap)]),
+                              from = observed_overlap[row_no_obs, 3], n = 1000),
+        col="red", lwd = 2)
+  lines(lower_dens <- density(unlist(random_overlap[row_no_rand, 3:ncol(random_overlap)]),
+                              to = observed_overlap[row_no_obs, 3], n = 1000),
+        col="blue", lwd = 2)
+  # observed overlap probability
+  abline(v = observed_overlap[row_no_obs, 3], lty = 3, lwd = 2, col = "grey")
+  # p-value calculation
+  lower_tail_prob <- with(lower_dens, sum(y * diff(x)[1]))
+  upper_tail_prob <- with(upper_dens, sum(y * diff(x)[1]))
+  difference <- ifelse(lower_tail_prob < upper_tail_prob,
+                       "lower", "higher")
+  p_value <- ifelse(lower_tail_prob < upper_tail_prob,
+                    lower_tail_prob, upper_tail_prob)
+  # graphic's text
+  mtext(paste("The overlap is", difference, "than expected;",
+              "p-value =", signif(p_value, digits = 3),
+              ifelse(p_value < 0.001, "(***)", 
+                     ifelse(p_value < 0.01, "(**)", 
+                            ifelse(p_value < 0.05, "(*)", "(not sign.)"))),
+              sep = " "),
+        side = 3)
+  text(labels = paste("Observed overlap:", round(observed_overlap[row_no_obs, 3], digits = 3), sep = " "),
+       x = observed_overlap[row_no_obs, 3],
+       y = 0.01,
+       pos = 1,
+       font = 2)
 }
 ```
