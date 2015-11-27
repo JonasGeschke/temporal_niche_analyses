@@ -420,7 +420,7 @@ Running the nicheoverlap funtion as main RA4 analyses:
 
 ```{r run ra4 nicheoverlap analyses}
 functiontest <- nicheoverlap(cast_EBN_p_prob0.5, method = "pianka", iterations = 2, txt = F, site = "EBN")
-result_EBN_p_perc95 <- nicheoverlap(cast_EBN, EBN_subset_perc95, method = "pianka", iterations = 2, site = "EBN")
+result_EBN_p_perc95_998 <- nicheoverlap(cast_EBN, EBN_subset_perc95, method = "pianka", iterations = 2, site = "EBN")
 ```
 
 
@@ -555,15 +555,14 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
       else {
           #convert absolute to relative abundance data
           rel_data <- data/rowSums(data)}
+      comb <- t(combn(rownames(rel_data), 2))
+      data_p <- cbind(comb, 998)
       if(subset == FALSE){
-        data_p <- cbind(t(combn(rownames(rel_data), 2)), 0)}
-        else 
-          {data_p <- cbind(subset, 0)
-          comb <- t(combn(rownames(rel_data)))
-          colnames(comb) <- c("Spp1", "Spp2")}
-      row_iterator <- ifelse(subset == FALSE, 1:nrow(data_p),
-                             which(complete.cases(merge(comb, subset,
-                                            all.x = TRUE, by = c("Spp1", "Spp2")))))
+        row_iterator <- 1:nrow(data_p)}
+        else
+          {colnames(comb) <- c("Spp1", "Spp2")
+          row_iterator <- which(complete.cases(merge(comb, cbind(subset, 1),
+                                                     all.x = TRUE, by = c("Spp1", "Spp2"))))}
       if(method == "pianka"){
         # Pianka
         for (i in row_iterator){
@@ -581,7 +580,7 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
       data_spp <- data.frame(data_spp, data_p[,3])
       if (ncol(data_spp)-2 == iterations[1]){break}
     }
-    # write txt cut here
+    # organized_txt was cut here
     if(txt == FALSE)
     {return(data_spp)}
     else
