@@ -550,7 +550,7 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
     data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(data), 2))),
                            Spp2 = factor(rep(1, choose(nrow(data), 2))))
     subset_paste <- apply(subset, 1, function(x) paste(x[1], x[2], sep ="_"))
-    
+    subset_paste <- append(subset_paste, apply(subset, 1, function(x) paste(x[2], x[1], sep ="_")))
     repeat{
       if(ra4 == TRUE){
         #ra4 randomization
