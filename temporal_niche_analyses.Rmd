@@ -566,7 +566,7 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
       if(method == "pianka"){
         # Pianka
         for (i in 1:nrow(data_p)){
-          if(paste(data_p[i,1], data_p[i, 2], sep = "_") %in% subset_paste | subset == FALSE){
+          if(paste(data_p[i,1], data_p[i, 2], sep = "_") %in% subset_paste | as.data.frame(subset)[1,1] == FALSE){
           data_p[i, 3] <- sum(rel_data[data_p[i,1],] * rel_data[data_p[i,2],])/sqrt(sum(rel_data[data_p[i,1],]^2) * sum(rel_data[data_p[i, 2],]^2))
           } else {}
           }}
@@ -574,7 +574,7 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
       if(method == "czekanowski"){
         # Czekanowski
         for (i in 1:nrow(data_p)){     
-          if(paste(data_p[i,1], data_p[i, 2], sep = "_") %in% subset_paste | subset == FALSE){
+          if(paste(data_p[i,1], data_p[i, 2], sep = "_") %in% subset_paste | as.data.frame(subset)[1,1] == FALSE){
           data_p[i, 3] <- 1 - 0.5 * sum(abs((rel_data[data_p[i, 1], ] - rel_data[data_p[i, 2], ])))
           } else {}
         }}
