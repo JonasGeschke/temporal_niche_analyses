@@ -411,7 +411,8 @@ choose(nrow(cast_EBN_p_prob0.5),2)/choose(nrow(cast_EBN),2)*100 #percentage of c
 
 Subsetting by species pair:
 ```{r run subset_spppairs}
-EBN_subset_perc95 <- subset_spppairs(EBN_p, percentile = 0.95)
+EBN_p_subset_perc95 <- subset_spppairs(EBN_p, percentile = 0.95)
+EBN_c_subset_perc95 <- subset_spppairs(EBN_c, percentile = 0.95)
 ```
 
 
@@ -420,7 +421,8 @@ Running the nicheoverlap funtion as main RA4 analyses:
 
 ```{r run ra4 nicheoverlap analyses}
 functiontest <- nicheoverlap(cast_EBN_p_prob0.5, method = "pianka", iterations = 2, txt = F, site = "EBN")
-result_EBN_p_perc95_998 <- nicheoverlap(cast_EBN, EBN_subset_perc95, method = "pianka", iterations = 2, site = "EBN")
+result_EBN_p_perc95_998 <- nicheoverlap(cast_EBN, EBN_p_subset_perc95, method = "pianka", iterations = 2, site = "EBN")
+result_EBN_c_perc95_998 <- nicheoverlap(cast_EBN, EBN_c_subset_perc95, method = "czekanowski", iterations = 2, site = "PP")
 ```
 
 
@@ -541,6 +543,7 @@ organized_txt <- function(data_spp, method, site){
 
 # Temporal niche overlap analysis function
 # This is the main function for the Pianka and Czekanowski niche overlap analyses
+# The Pianka and Czekanowski code is taken from the Package "EcoSimR"
 # As a function, the code block needs to be loaded once for running afterwards
 nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, iterations = 1, txt = FALSE, site = "missing"){
   if(site %in% c("PP", "EBN")){
@@ -554,15 +557,17 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
         rel_data <- data_rand/rowSums(data_rand)}
       else {
           #convert absolute to relative abundance data
-          rel_data <- data/rowSums(data)}
+          rel_data <- data/rowSums(data)
+          }
       comb <- t(combn(rownames(rel_data), 2))
       data_p <- cbind(comb, 998)
       if(subset == FALSE){
         row_iterator <- 1:nrow(data_p)}
-        else
-          {colnames(comb) <- c("Spp1", "Spp2")
+        else {
+          colnames(comb) <- c("Spp1", "Spp2")
           row_iterator <- which(complete.cases(merge(comb, cbind(subset, 1),
-                                                     all.x = TRUE, by = c("Spp1", "Spp2"))))}
+                                                     all.x = TRUE, by = c("Spp1", "Spp2"))))
+          }
       if(method == "pianka"){
         # Pianka
         for (i in row_iterator){
