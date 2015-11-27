@@ -563,23 +563,20 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
           }
       comb <- t(combn(rownames(rel_data), 2))
       data_p <- cbind(comb, 998)
-      if(subset == FALSE){
-        row_iterator <- 1:nrow(data_p)}
-        else {
-          colnames(comb) <- c("Spp1", "Spp2")
-          row_iterator <- which(complete.cases(merge(comb, cbind(subset, 1),
-                                                     all.x = TRUE, by = c("Spp1", "Spp2"))))
-          }
       if(method == "pianka"){
         # Pianka
-        for (i in row_iterator){
+        for (i in 1:nrow(data_p)){
+          if(paste(data_p[i,1], data_p[i, 2], sep = "_") %in% subset_paste | subset == FALSE){
           data_p[i, 3] <- sum(rel_data[data_p[i,1],] * rel_data[data_p[i,2],])/sqrt(sum(rel_data[data_p[i,1],]^2) * sum(rel_data[data_p[i, 2],]^2))
+          } else {}
           }}
       else
       if(method == "czekanowski"){
         # Czekanowski
-        for (i in row_iterator){
+        for (i in 1:nrow(data_p)){     
+          if(paste(data_p[i,1], data_p[i, 2], sep = "_") %in% subset_paste | subset == FALSE){
           data_p[i, 3] <- 1 - 0.5 * sum(abs((rel_data[data_p[i, 1], ] - rel_data[data_p[i, 2], ])))
+          } else {}
         }}
       else
       {return("Error: Please set method as pianka or czekanowski")}
