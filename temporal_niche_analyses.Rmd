@@ -73,12 +73,15 @@ if("devtools" %in% rownames(installed.packages())  == FALSE) {install.packages("
 if("lubridate" %in% rownames(installed.packages())  == FALSE) {install.packages("lubridate")}
 if("ggplot2" %in% rownames(installed.packages())    == FALSE) {install.packages("ggplot2")}
 if("reshape" %in% rownames(installed.packages())    == FALSE) {install.packages("reshape")}
+if("Rcpp" %in% rownames(installed.packages())    == FALSE) {install.packages("Rcpp")}
+
 
 # Loading the packages for the skript to work
 library(devtools)
 library(lubridate)
 library(ggplot2)
 library(reshape)
+library(Rcpp)
 
 # Installing and loading our own NicheOverlapR packages, containing all functions needed for running this skript
 install_github("NicheOverlapR", "JonasGeschke")
@@ -420,8 +423,10 @@ EBN_c_subset_perc95 <- subset_spppairs(EBN_c, percentile = 0.95)
 Running the nicheoverlap funtion as main RA4 analyses:
 
 ```{r run ra4 nicheoverlap analyses}
-RA4result_EBN_p_perc95 <- nicheoverlap(cast_EBN, EBN_p_subset_perc95, method = "pianka", iterations = 5, site = "EBN")
-RA4result_EBN_c_perc95 <- nicheoverlap(cast_EBN, EBN_c_subset_perc95, method = "czekanowski", iterations = 2, site = "PP")
+RA4result_EBN_p_perc95 <- nicheoverlap(cast_EBN, EBN_p_subset_perc95, method = "pianka", iterations = 100,
+                                       site = "EBN")
+RA4result_EBN_c_perc95 <- nicheoverlap(cast_EBN, EBN_c_subset_perc95, method = "czekanowski", iterations = 100,
+                                       site = "PP")
 ```
 
 
@@ -536,8 +541,11 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
   if(site %in% c("PP", "EBN")){
     data_spp <- data.frame(Spp1 = factor(rep(1, choose(nrow(data), 2))),
                            Spp2 = factor(rep(1, choose(nrow(data), 2))))
-    subset_paste <- apply(subset, 1, function(x) paste(x[1], x[2], sep = "_"))
-    subset_paste <- append(subset_paste, apply(subset, 1, function(x) paste(x[2], x[1], sep = "_")))
+    if(subset != FALSE){
+            subset_paste <- apply(subset, 1, function(x) paste(x[1], x[2], sep = "_"))
+            subset_paste <- append(subset_paste, apply(subset, 1, function(x) paste(x[2], x[1], sep = "_")))}
+    else {}
+    ifelse(method == "pianka", cppFunction("double pianka(NumericVector x, NumericVector y){double z = sum(x * y)/sqrt(sum(pow(x, 2)) * sum(pow(y, 2)));return z;}"), cppFunction("double czeka(NumericVector x, NumericVector y){double z = 1 - 0.5*sum(abs(x-y)); return z;}"))
     repeat{
       if(ra4 == TRUE){
         #ra4 randomization
@@ -553,18 +561,21 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
       if(method == "pianka"){
         # Pianka
         for (i in 1:nrow(data_p)){
-          if(paste(data_p[i,1], data_p[i, 2], sep = "_") %in% subset_paste | as.data.frame(subset)[1,1] == FALSE){
-          data_p[i, 3] <- sum(rel_data[data_p[i,1],] * rel_data[data_p[i,2],])/sqrt(sum(rel_data[data_p[i,1],]^2) * sum(rel_data[data_p[i, 2],]^2))
+                if(subset == FALSE){data_p[i, 3] <- pianka(as.numeric(rel_data[data_p[i,1],]), as.numeric(rel_data[data_p[i,2],]))}else {
+                        if(paste(data_p[i,1], data_p[i, 2], sep = "_") %in% subset_paste | as.data.frame(subset)[1,1] == FALSE){
+          data_p[i, 3] <- pianka(as.numeric(rel_data[data_p[i,1],]), as.numeric(rel_data[data_p[i,2],]))
           } else {}
-          }}
+          }}}
       else
       if(method == "czekanowski"){
         # Czekanowski
-        for (i in 1:nrow(data_p)){     
+        for (i in 1:nrow(data_p)){
+                if(subset==FALSE){data_p[i, 3] <- czeka(rel_data[data_p[i, 1], ], rel_data[data_p[i, 2], ])}
+                else {
           if(paste(data_p[i,1], data_p[i, 2], sep = "_") %in% subset_paste | as.data.frame(subset)[1,1] == FALSE){
-          data_p[i, 3] <- 1 - 0.5 * sum(abs((rel_data[data_p[i, 1], ] - rel_data[data_p[i, 2], ])))
+          data_p[i, 3] <- czeka(rel_data[data_p[i, 1], ], rel_data[data_p[i, 2], ])
           } else {}
-        }}
+        }}}
       else
       {return("Error: Please set method as pianka or czekanowski")}
       data_spp[,c(1,2)] <- data_p[,c(1,2)]
@@ -585,11 +596,11 @@ nicheoverlap <- function(data, subset = FALSE, method = "missing", ra4 = TRUE, i
 ```{r subset_spppairs function}
 subset_spppairs <- function(data, percentile = FALSE, prob = FALSE){
   if(percentile == FALSE & prob != FALSE){
-    subset <- data[data$TempOverlapProb >= prob, c(1, 2)]
+    subset <- data[data[,3] >= prob, c(1, 2)]
     return(subset)
   }else{}
   if(prob == FALSE & percentile != FALSE){
-    subset <- data[data$TempOverlapProb >= quantile(data$TempOverlapProb, percentile), c(1, 2)]
+    subset <- data[data[,3] >= quantile(data[,3], percentile), c(1, 2)]
     return(subset)
   }else{}
   if(percentile != FALSE & prob != FALSE){return("Please only give input for either percentile or prob")}
