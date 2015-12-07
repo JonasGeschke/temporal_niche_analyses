@@ -434,7 +434,7 @@ RA4result_EBN_c_perc95 <- nicheoverlap(cast_EBN, EBN_c_subset_perc95, method = "
 Calculating the tail probabilty of the observed niche overlap.
 
 ```{r run tail_probability}
-final_outcome_EBN_p <- tail_probability(EBN_p, result_EBN_p_perc95)
+final_outcome_EBN_p <- tail_probability(EBN_p, RA4result_EBN_p_perc95)
 ```
 
 
